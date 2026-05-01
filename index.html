@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JVR'S StudyAI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,13 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* ─── RESET ─────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #F2F4FA;
+      --bg:          #F0F2FA;
       --surface:     #FFFFFF;
-      --border:      #E4E8F0;
+      --border:      #E2E6F0;
       --accent:      #5B5FEF;
       --accent-dim:  #EEEFFE;
       --accent-dark: #4347C8;
@@ -30,8 +29,7 @@
       --text-muted:  #8A93B0;
       --radius:      18px;
       --radius-sm:   10px;
-      --shadow:      0 2px 8px rgba(15,22,48,0.07), 0 0 0 1px var(--border);
-      --shadow-lg:   0 8px 32px rgba(91,95,239,0.13);
+      --shadow:      0 2px 12px rgba(15,22,48,0.07), 0 0 0 1px var(--border);
     }
 
     body {
@@ -42,1263 +40,686 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ─── HEADER ─────────────────────────────────────────── */
+    /* HEADER */
     .header {
-      background: linear-gradient(140deg, #0E0B2E 0%, #1E1A5E 50%, #2E2A8E 100%);
-      padding: 44px 24px 52px;
+      background: linear-gradient(140deg, #0B0928 0%, #1A1654 50%, #252090 100%);
+      padding: 44px 24px 54px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
-
     .header::after {
       content: '';
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 60% at 20% 80%, rgba(91,95,239,0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 40% at 80% 20%, rgba(129,140,248,0.15) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 60% at 15% 85%, rgba(91,95,239,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 45% at 85% 15%, rgba(129,140,248,0.18) 0%, transparent 70%);
       pointer-events: none;
     }
-
     .header-dots {
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
-      background-size: 28px 28px;
+      position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.055) 1px, transparent 1px);
+      background-size: 26px 26px;
       pointer-events: none;
     }
-
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -1px;
-      position: relative;
-      z-index: 1;
-      line-height: 1;
-    }
-
+    .logo { font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800; color:#fff; letter-spacing:-1px; position:relative; z-index:1; line-height:1; }
     .logo-accent { color: #818CF8; }
+    .logo-badge { display:inline-block; font-family:'DM Sans',sans-serif; font-size:0.62rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; background:linear-gradient(90deg,#818CF8,#C4B5FD); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; vertical-align:super; margin-left:4px; }
+    .tagline { font-size:0.88rem; color:rgba(255,255,255,0.5); margin-top:10px; position:relative; z-index:1; }
+    .header-pills { display:flex; gap:8px; justify-content:center; margin-top:16px; position:relative; z-index:1; flex-wrap:wrap; }
+    .header-pill { font-size:0.7rem; font-weight:600; padding:4px 12px; border-radius:99px; border:1px solid rgba(255,255,255,0.14); color:rgba(255,255,255,0.6); letter-spacing:0.3px; }
 
-    .logo-badge {
-      display: inline-block;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #818CF8, #C4B5FD);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      vertical-align: super;
-      margin-left: 4px;
-    }
+    /* LAYOUT */
+    .main { max-width:780px; margin:0 auto; padding:28px 20px 72px; display:flex; flex-direction:column; gap:18px; }
 
-    .tagline {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.52);
-      margin-top: 10px;
-      font-weight: 400;
-      letter-spacing: 0.2px;
-      position: relative;
-      z-index: 1;
-    }
+    /* CARD */
+    .card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:28px; box-shadow:var(--shadow); animation:slideUp 0.4s ease both; }
+    .card:nth-child(2) { animation-delay:0.07s; }
+    .card:nth-child(3) { animation-delay:0.13s; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+    .card-header { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+    .card-icon { width:38px; height:38px; border-radius:10px; background:var(--accent-dim); display:grid; place-items:center; font-size:1.1rem; flex-shrink:0; }
+    .card-title { font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:700; color:var(--text); }
 
-    .header-pills {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 18px;
-      position: relative;
-      z-index: 1;
-      flex-wrap: wrap;
-    }
-
-    .header-pill {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 99px;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.65);
-      letter-spacing: 0.3px;
-    }
-
-    /* ─── LAYOUT ─────────────────────────────────────────── */
-    .main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 28px 20px 72px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    /* ─── CARD ───────────────────────────────────────────── */
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 28px;
-      box-shadow: var(--shadow);
-      animation: slideUp 0.4s ease both;
-    }
-
-    .card:nth-child(2) { animation-delay: 0.08s; }
-    .card:nth-child(3) { animation-delay: 0.14s; }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0);    }
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .card-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--accent-dim);
-      display: grid;
-      place-items: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-
-    .card-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    /* ─── FORM ───────────────────────────────────────────── */
-    .field { margin-bottom: 16px; }
-
-    .field-label {
-      display: block;
-      font-size: 0.73rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      margin-bottom: 6px;
-    }
-
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+    /* FORM */
+    .field { margin-bottom:16px; }
+    .field-label { display:block; font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:7px; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 
     input[type="text"], select {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 0.93rem;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      background: #FAFBFF;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none;
-      appearance: none;
+      width:100%; padding:11px 14px;
+      border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      font-size:0.93rem; font-family:'DM Sans',sans-serif;
+      color:var(--text); background:#FAFBFF;
+      outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance:none; appearance:none;
     }
+    select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238A93B0'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 13px center; padding-right:34px; }
+    input[type="text"]:focus, select:focus { border-color:var(--accent); background:#fff; box-shadow:0 0 0 3px rgba(91,95,239,0.12); }
 
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238A93B0'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 13px center;
-      padding-right: 34px;
+    .drop-zone { border:2px dashed #C7D2FE; border-radius:var(--radius-sm); background:#F7F8FF; padding:22px 16px; text-align:center; cursor:pointer; transition:border-color 0.2s, background 0.2s; position:relative; }
+    .drop-zone:hover { border-color:var(--accent); background:var(--accent-dim); }
+    .drop-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .drop-icon { font-size:1.7rem; display:block; margin-bottom:6px; }
+    .drop-text { font-size:0.87rem; color:var(--accent); font-weight:600; }
+    .drop-hint { font-size:0.76rem; color:var(--text-muted); margin-top:3px; }
+    #file-name { font-size:0.79rem; color:var(--text-muted); margin-top:7px; }
+
+    /* CHIPS */
+    .chips-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+    .chip {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:99px;
+      border:1.5px solid var(--border); background:#FAFBFF;
+      font-size:0.82rem; font-weight:600; color:var(--text-mid);
+      cursor:pointer; transition:all 0.18s; user-select:none; white-space:nowrap;
     }
+    .chip:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+    .chip.active { border-color:var(--accent); background:var(--accent); color:#fff; box-shadow:0 2px 10px rgba(91,95,239,0.3); }
+    .chip.active:hover { background:var(--accent-dark); border-color:var(--accent-dark); }
+    .chip-icon { font-size:0.9rem; }
+    .chips-hint { font-size:0.76rem; color:var(--text-muted); margin-top:8px; font-style:italic; }
 
-    input[type="text"]:focus, select:focus {
-      border-color: var(--accent);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(91,95,239,0.12);
-    }
+    /* BUTTONS */
+    .btn { display:block; width:100%; padding:13px 20px; border:none; border-radius:var(--radius-sm); font-size:0.95rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; transition:all 0.18s; letter-spacing:0.1px; }
+    .btn:active { transform:scale(0.98) !important; }
+    .btn-primary { background:var(--accent); color:#fff; margin-top:6px; box-shadow:0 2px 12px rgba(91,95,239,0.32); }
+    .btn-primary:hover { background:var(--accent-dark); box-shadow:0 4px 20px rgba(91,95,239,0.42); transform:translateY(-1px); }
+    .btn-download { background:linear-gradient(135deg,#059669,#047857); color:#fff; margin-top:18px; display:none; box-shadow:0 2px 12px rgba(5,150,105,0.28); }
+    .btn-download.visible { display:block; }
+    .btn-download:hover { transform:translateY(-1px); box-shadow:0 4px 18px rgba(5,150,105,0.38); }
 
-    .drop-zone {
-      border: 2px dashed #C7D2FE;
-      border-radius: var(--radius-sm);
-      background: #F7F8FF;
-      padding: 22px 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-    }
+    /* STATUS */
+    .msg { margin-top:10px; font-size:0.85rem; font-weight:500; min-height:18px; }
+    .msg.success { color:var(--success); }
+    .msg.error   { color:var(--error); }
+    .loader { display:none; align-items:center; justify-content:center; gap:10px; padding:16px 0 4px; color:var(--accent); font-size:0.9rem; font-weight:500; }
+    .loader.visible { display:flex; }
+    .spinner { width:20px; height:20px; border:2.5px solid var(--accent-dim); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-    .drop-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
-    .drop-zone input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
+    /* OUTPUT */
+    #output-section { display:none; }
+    #output-section.visible { display:block; }
+    .output-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid var(--border); flex-wrap:wrap; }
+    .output-title-text { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; color:var(--text); }
+    .output-badge { font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:99px; letter-spacing:0.5px; text-transform:uppercase; }
 
-    .drop-icon { font-size: 1.7rem; display: block; margin-bottom: 6px; }
-    .drop-text  { font-size: 0.87rem; color: var(--accent); font-weight: 600; }
-    .drop-hint  { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; }
+    /* PROGRESS */
+    .quiz-progress-bar { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+    .quiz-progress-text { font-size:0.78rem; font-weight:600; color:var(--text-muted); white-space:nowrap; }
+    .progress-track { flex:1; height:5px; background:var(--border); border-radius:99px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),#818CF8); border-radius:99px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); width:0%; }
 
-    #file-name {
-      font-size: 0.79rem;
-      color: var(--text-muted);
-      margin-top: 7px;
-    }
+    /* Q BLOCKS */
+    .q-block { background:#FAFBFF; border:1.5px solid var(--border); border-radius:14px; padding:20px 22px; margin-bottom:14px; transition:border-color 0.2s; }
+    .q-block:hover { border-color:#C7D2FE; }
+    .q-num { font-size:0.7rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.9px; margin-bottom:7px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .q-type-tag { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.5px; }
+    .q-text { font-size:0.97rem; font-weight:600; color:var(--text); line-height:1.57; margin-bottom:14px; }
 
-    /* ─── BUTTONS ────────────────────────────────────────── */
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 13px 20px;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 0.95rem;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.18s;
-      letter-spacing: 0.1px;
-    }
+    /* OPTIONS */
+    .quiz-option { display:flex; align-items:flex-start; gap:11px; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; margin-bottom:8px; cursor:pointer; transition:border-color 0.18s, background 0.18s, transform 0.15s; user-select:none; background:var(--surface); }
+    .quiz-option:last-child { margin-bottom:0; }
+    .quiz-option:hover:not(.locked) { border-color:var(--accent); background:var(--accent-dim); transform:translateX(3px); }
+    .quiz-option.locked { cursor:default; }
+    .quiz-option.correct { background:var(--success-bg); border-color:var(--success-bd); }
+    .quiz-option.wrong   { background:var(--error-bg);   border-color:var(--error-bd); }
+    .opt-pill { width:28px; height:28px; border-radius:7px; background:var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; color:var(--text-mid); transition:background 0.18s, color 0.18s; }
+    .quiz-option.correct .opt-pill { background:var(--success); color:#fff; }
+    .quiz-option.wrong   .opt-pill { background:var(--error);   color:#fff; }
+    .opt-text { font-size:0.91rem; line-height:1.45; padding-top:4px; color:var(--text-mid); flex:1; }
+    .quiz-option.correct .opt-text { color:var(--success); font-weight:600; }
+    .quiz-option.wrong   .opt-text { color:var(--error);   font-weight:600; }
+    .opt-icon { font-size:1rem; flex-shrink:0; padding-top:4px; min-width:18px; }
 
-    .btn:active { transform: scale(0.98) !important; }
+    /* ASSERTION */
+    .assert-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    .assert-box { background:#F5F6FF; border:1.5px solid #C7D2FE; border-radius:9px; padding:12px 14px; }
+    .assert-box-label { font-size:0.67rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:5px; }
+    .assert-box-text  { font-size:0.88rem; color:var(--text); line-height:1.5; }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      margin-top: 6px;
-      box-shadow: 0 2px 12px rgba(91,95,239,0.32);
-    }
+    /* MATCH TABLE */
+    .match-table { width:100%; border-collapse:collapse; margin-bottom:12px; border-radius:9px; overflow:hidden; }
+    .match-table th { padding:7px 12px; background:#F0F2FF; border:1px solid #C7D2FE; font-size:0.72rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px; }
+    .match-table td { padding:8px 12px; border:1px solid var(--border); font-size:0.9rem; color:var(--text-mid); }
+    .match-table tr:nth-child(even) td { background:#FAFBFF; }
 
-    .btn-primary:hover {
-      background: var(--accent-dark);
-      box-shadow: 0 4px 20px rgba(91,95,239,0.42);
-      transform: translateY(-1px);
-    }
+    /* STATEMENT LIST */
+    .stmt-list { list-style:none; margin-bottom:12px; }
+    .stmt-list li { display:flex; align-items:flex-start; gap:10px; padding:7px 10px; font-size:0.9rem; color:var(--text-mid); border-radius:7px; line-height:1.45; }
+    .stmt-list li:nth-child(odd) { background:#FAFBFF; }
+    .stmt-num { font-weight:700; color:var(--accent); min-width:20px; flex-shrink:0; }
 
-    .btn-download {
-      background: linear-gradient(135deg, #059669, #047857);
-      color: #fff;
-      margin-top: 18px;
-      display: none;
-      box-shadow: 0 2px 12px rgba(5,150,105,0.28);
-    }
+    /* SEQUENCE */
+    .sequence-list { list-style:none; margin-bottom:12px; }
+    .sequence-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); margin-bottom:6px; font-size:0.9rem; color:var(--text-mid); background:#FAFBFF; }
+    .sequence-num { width:24px; height:24px; border-radius:50%; background:var(--accent-dim); color:var(--accent); font-size:0.75rem; font-weight:700; display:grid; place-items:center; flex-shrink:0; }
 
-    .btn-download.visible { display: block; }
-    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(5,150,105,0.38); }
+    /* SCORE */
+    .score-banner { margin-top:22px; padding:22px 24px; border-radius:16px; text-align:center; display:none; animation:popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+    @keyframes popIn { from{opacity:0;transform:scale(0.8) translateY(10px);} to{opacity:1;transform:scale(1) translateY(0);} }
+    .score-banner.visible { display:block; }
+    .score-banner.great { background:linear-gradient(135deg,#D1FAE5,#A7F3D0); border:1.5px solid #6EE7B7; }
+    .score-banner.okay  { background:linear-gradient(135deg,#FEF3C7,#FDE68A); border:1.5px solid #FCD34D; }
+    .score-banner.poor  { background:linear-gradient(135deg,#FEE2E2,#FECACA); border:1.5px solid #FCA5A5; }
+    .score-emoji { font-size:2.4rem; margin-bottom:8px; display:block; }
+    .score-big   { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:var(--text); }
+    .score-sub   { font-size:0.85rem; color:var(--text-mid); margin-top:5px; font-weight:500; }
 
-    /* ─── STATUS ─────────────────────────────────────────── */
-    .msg {
-      margin-top: 10px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      min-height: 18px;
-    }
+    /* PAPER */
+    .exam-info { font-size:0.82rem; color:var(--text-muted); padding:10px 14px; background:#F8F9FF; border-radius:9px; border:1px solid var(--border); margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+    .paper-option { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; margin-bottom:5px; border-radius:7px; }
+    .paper-opt-label { font-weight:700; color:var(--text-muted); min-width:22px; font-size:0.88rem; }
+    .paper-opt-text  { font-size:0.9rem; color:var(--text-mid); line-height:1.45; }
 
-    .msg.success { color: var(--success); }
-    .msg.error   { color: var(--error); }
+    /* FLASHCARDS */
+    .fc-hint { font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:500; }
+    .flashcard { margin-bottom:14px; cursor:pointer; border-radius:14px; position:relative; }
+    .fc-front { background:#FAFBFF; border:1.5px solid var(--border); border-radius:14px; padding:22px 24px 34px; transition:border-color 0.2s; }
+    .flashcard:hover .fc-front { border-color:#C7D2FE; }
+    .fc-back { display:none; background:linear-gradient(135deg,#EEEFFE,#E0E4FF); border:1.5px solid #C7D2FE; border-radius:14px; padding:22px 24px; }
+    .flashcard.flipped .fc-front { display:none; }
+    .flashcard.flipped .fc-back  { display:block; animation:flipReveal 0.38s cubic-bezier(0.25,0.46,0.45,0.94) both; }
+    @keyframes flipReveal { from{transform:perspective(700px) rotateY(-80deg) scale(0.94);opacity:0;} to{transform:perspective(700px) rotateY(0) scale(1);opacity:1;} }
+    .fc-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.9px; margin-bottom:9px; }
+    .fc-front .fc-label { color:var(--text-muted); }
+    .fc-back  .fc-label { color:var(--accent); }
+    .fc-content { font-size:0.95rem; font-weight:500; line-height:1.57; color:var(--text); }
+    .fc-back .fc-content { color:#3730A3; font-weight:600; }
+    .fc-tap-hint { font-size:0.7rem; color:var(--text-muted); position:absolute; bottom:12px; right:16px; opacity:0.65; }
+    .fc-num { font-size:0.7rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:5px; }
 
-    .loader {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 16px 0 4px;
-      color: var(--accent);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .loader.visible { display: flex; }
-
-    .spinner {
-      width: 20px; height: 20px;
-      border: 2.5px solid var(--accent-dim);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ─── OUTPUT SECTION ─────────────────────────────────── */
-    #output-section { display: none; }
-    #output-section.visible { display: block; }
-
-    .output-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1.5px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .output-title-text {
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .output-badge {
-      font-size: 0.73rem;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 99px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    /* ─── QUIZ ───────────────────────────────────────────── */
-    .quiz-progress-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .quiz-progress-text {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .progress-track {
-      flex: 1;
-      height: 5px;
-      background: var(--border);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #818CF8);
-      border-radius: 99px;
-      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      width: 0%;
-    }
-
-    .q-block {
-      background: #FAFBFF;
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 20px 22px;
-      margin-bottom: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .q-block:hover { border-color: #C7D2FE; }
-
-    .q-num {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.9px;
-      margin-bottom: 7px;
-    }
-
-    .q-text {
-      font-size: 0.97rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.57;
-      margin-bottom: 14px;
-    }
-
-    /* Interactive quiz options */
-    .quiz-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 11px;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 9px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: border-color 0.18s, background 0.18s, transform 0.15s;
-      user-select: none;
-      background: var(--surface);
-    }
-
-    .quiz-option:last-child { margin-bottom: 0; }
-
-    .quiz-option:hover:not(.locked) {
-      border-color: var(--accent);
-      background: var(--accent-dim);
-      transform: translateX(3px);
-    }
-
-    .quiz-option.locked { cursor: default; }
-
-    .quiz-option.correct {
-      background: var(--success-bg);
-      border-color: var(--success-bd);
-    }
-
-    .quiz-option.wrong {
-      background: var(--error-bg);
-      border-color: var(--error-bd);
-    }
-
-    .opt-pill {
-      width: 28px; height: 28px;
-      border-radius: 7px;
-      background: var(--border);
-      display: grid;
-      place-items: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      flex-shrink: 0;
-      color: var(--text-mid);
-      transition: background 0.18s, color 0.18s;
-    }
-
-    .quiz-option.correct .opt-pill {
-      background: var(--success);
-      color: #fff;
-    }
-
-    .quiz-option.wrong .opt-pill {
-      background: var(--error);
-      color: #fff;
-    }
-
-    .opt-text {
-      font-size: 0.91rem;
-      line-height: 1.45;
-      padding-top: 4px;
-      color: var(--text-mid);
-      flex: 1;
-    }
-
-    .quiz-option.correct .opt-text { color: var(--success); font-weight: 600; }
-    .quiz-option.wrong   .opt-text { color: var(--error);   font-weight: 600; }
-
-    .opt-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-      padding-top: 4px;
-      min-width: 18px;
-    }
-
-    /* Score Banner */
-    .score-banner {
-      margin-top: 22px;
-      padding: 22px 24px;
-      border-radius: 16px;
-      text-align: center;
-      display: none;
-      animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    }
-
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(0.8) translateY(10px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .score-banner.visible { display: block; }
-    .score-banner.great { background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 1.5px solid #6EE7B7; }
-    .score-banner.okay  { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1.5px solid #FCD34D; }
-    .score-banner.poor  { background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); border: 1.5px solid #FCA5A5; }
-
-    .score-emoji { font-size: 2.4rem; margin-bottom: 8px; display: block; }
-    .score-big   { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text); }
-    .score-sub   { font-size: 0.85rem; color: var(--text-mid); margin-top: 5px; font-weight: 500; }
-
-    /* ─── QUESTION PAPER ─────────────────────────────────── */
-    .exam-info {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      padding: 10px 14px;
-      background: #F8F9FF;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .paper-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 8px 10px;
-      margin-bottom: 5px;
-      border-radius: 7px;
-    }
-
-    .paper-opt-label {
-      font-weight: 700;
-      color: var(--text-muted);
-      min-width: 22px;
-      font-size: 0.88rem;
-    }
-
-    .paper-opt-text {
-      font-size: 0.9rem;
-      color: var(--text-mid);
-      line-height: 1.45;
-    }
-
-    /* ─── FLASHCARDS ─────────────────────────────────────── */
-    .fc-hint {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-weight: 500;
-    }
-
-    .flashcard {
-      margin-bottom: 14px;
-      cursor: pointer;
-      border-radius: 14px;
-      position: relative;
-    }
-
-    .fc-front {
-      background: #FAFBFF;
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 22px 24px 28px;
-      transition: border-color 0.2s;
-    }
-
-    .flashcard:hover .fc-front { border-color: #C7D2FE; }
-
-    .fc-back {
-      display: none;
-      background: linear-gradient(135deg, #EEEFFE 0%, #E0E4FF 100%);
-      border: 1.5px solid #C7D2FE;
-      border-radius: 14px;
-      padding: 22px 24px;
-    }
-
-    .flashcard.flipped .fc-front { display: none; }
-    .flashcard.flipped .fc-back {
-      display: block;
-      animation: flipReveal 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-    }
-
-    @keyframes flipReveal {
-      from { transform: perspective(700px) rotateY(-80deg) scale(0.94); opacity: 0; }
-      to   { transform: perspective(700px) rotateY(0deg)  scale(1);    opacity: 1; }
-    }
-
-    .fc-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.9px;
-      margin-bottom: 9px;
-    }
-
-    .fc-front .fc-label { color: var(--text-muted); }
-    .fc-back  .fc-label { color: var(--accent); }
-
-    .fc-content {
-      font-size: 0.95rem;
-      font-weight: 500;
-      line-height: 1.57;
-      color: var(--text);
-    }
-
-    .fc-back .fc-content {
-      color: #3730A3;
-      font-weight: 600;
-    }
-
-    .fc-tap-hint {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      position: absolute;
-      bottom: 12px;
-      right: 16px;
-      opacity: 0.65;
-    }
-
-    .fc-num {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 5px;
-    }
-
-    /* ─── RESPONSIVE ─────────────────────────────────────── */
-    @media (max-width: 520px) {
-      .card { padding: 22px 16px; }
-      .field-row { grid-template-columns: 1fr; }
-      .logo { font-size: 2rem; }
-      .header { padding: 32px 18px 42px; }
-      .header-pills { display: none; }
+    @media (max-width:540px) {
+      .card { padding:20px 14px; }
+      .field-row { grid-template-columns:1fr; }
+      .logo { font-size:2rem; }
+      .header { padding:30px 16px 42px; }
+      .header-pills { display:none; }
+      .assert-row { grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ─── HEADER ──────────────────────────────────────────── -->
-  <header class="header">
-    <div class="header-dots"></div>
-    <div class="logo">📚 JVR'S <span class="logo-accent">StudyAI</span><span class="logo-badge">v2</span></div>
-    <p class="tagline">Upload once · Generate quizzes, flashcards &amp; papers forever</p>
-    <div class="header-pills">
-      <span class="header-pill">🧠 AI-Powered</span>
-      <span class="header-pill">⚡ Instant Generation</span>
-      <span class="header-pill">📄 PDF Export</span>
+<header class="header">
+  <div class="header-dots"></div>
+  <div class="logo">📚 JVR'S <span class="logo-accent">StudyAI</span><span class="logo-badge">v3</span></div>
+  <p class="tagline">Upload once · Generate quizzes, flashcards &amp; papers forever</p>
+  <div class="header-pills">
+    <span class="header-pill">🧠 AI-Powered</span>
+    <span class="header-pill">⚡ Instant Generation</span>
+    <span class="header-pill">📄 PDF Export</span>
+    <span class="header-pill">🎯 10 Question Types</span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- UPLOAD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📤</div>
+      <div class="card-title">Upload Notes</div>
     </div>
-  </header>
-
-  <!-- ─── MAIN ─────────────────────────────────────────────── -->
-  <main class="main">
-
-    <!-- Upload Card -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon">📤</div>
-        <div class="card-title">Upload Notes</div>
+    <div class="field">
+      <label class="field-label">Topic Name</label>
+      <input type="text" id="topic-input" placeholder="e.g. Human Reproductive System"/>
+    </div>
+    <div class="field">
+      <label class="field-label">Upload Files (PDF / TXT)</label>
+      <div class="drop-zone">
+        <input type="file" id="file-input" multiple accept=".pdf,.txt" onchange="showFileName()"/>
+        <span class="drop-icon">📁</span>
+        <div class="drop-text">Choose or drag files here</div>
+        <div class="drop-hint">PDF and TXT · Multiple files allowed</div>
       </div>
+      <div id="file-name">No files chosen</div>
+    </div>
+    <button class="btn btn-primary" onclick="uploadNotes()">Upload Notes</button>
+    <div class="msg" id="upload-msg"></div>
+  </div>
 
-      <div class="field">
-        <label class="field-label">Topic Name</label>
-        <input type="text" id="topic-input" placeholder="e.g. Human Reproductive System" />
-      </div>
-
-      <div class="field">
-        <label class="field-label">Upload Files (PDF / TXT)</label>
-        <div class="drop-zone">
-          <input type="file" id="file-input" multiple accept=".pdf,.txt" onchange="showFileName()" />
-          <span class="drop-icon">📁</span>
-          <div class="drop-text">Choose or drag files here</div>
-          <div class="drop-hint">PDF and TXT · Multiple files allowed</div>
-        </div>
-        <div id="file-name">No files chosen</div>
-      </div>
-
-      <button class="btn btn-primary" onclick="uploadNotes()">⬆ Upload Notes</button>
-      <div class="msg" id="upload-msg"></div>
+  <!-- GENERATE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">Generate Study Material</div>
     </div>
 
-    <!-- Generate Card -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon">⚡</div>
-        <div class="card-title">Generate Study Material</div>
-      </div>
+    <div class="field">
+      <label class="field-label">Select Topic</label>
+      <select id="topic-select"><option value="">Loading topics...</option></select>
+    </div>
 
+    <div class="field-row">
       <div class="field">
-        <label class="field-label">Select Topic</label>
-        <select id="topic-select">
-          <option value="">— Loading topics… —</option>
+        <label class="field-label">Output Type</label>
+        <select id="output-type" onchange="onOutputTypeChange()">
+          <option value="quiz">Quiz (MCQ)</option>
+          <option value="flashcards">Flashcards</option>
+          <option value="question paper">Question Paper</option>
         </select>
       </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label">Output Type</label>
-          <select id="output-type">
-            <option value="quiz">Quiz (MCQ)</option>
-            <option value="flashcards">Flashcards</option>
-            <option value="question paper">Question Paper</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">Difficulty</label>
-          <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium" selected>Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-      </div>
-
       <div class="field">
-        <label class="field-label">Number of Questions</label>
-        <input type="text" id="num-questions" placeholder="e.g. 5" value="5" />
+        <label class="field-label">Difficulty</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
       </div>
-
-      <button class="btn btn-primary" onclick="generate()">✨ Generate</button>
-      <div class="loader" id="loader"><span class="spinner"></span>Generating, please wait…</div>
-      <div class="msg" id="gen-msg"></div>
     </div>
 
-    <!-- Output Card -->
-    <div class="card" id="output-section">
-      <div class="output-header">
-        <div class="output-title-text" id="output-title">Results</div>
-        <div class="output-badge" id="output-badge">Quiz</div>
-      </div>
-      <div id="output-body"></div>
-      <div class="score-banner" id="score-banner">
-        <span class="score-emoji" id="score-emoji">🎉</span>
-        <div class="score-big"  id="score-big">0 / 0</div>
-        <div class="score-sub"  id="score-sub">Keep it up!</div>
-      </div>
-      <button class="btn btn-download" id="download-btn" onclick="downloadPDF()">⬇ Download PDF</button>
+    <div class="field">
+      <label class="field-label">Number of Questions</label>
+      <input type="text" id="num-questions" value="5" placeholder="e.g. 5"/>
     </div>
 
-  </main>
+    <!-- QUESTION TYPE CHIPS -->
+    <div class="field" id="qtype-section">
+      <label class="field-label">Question Types to Include</label>
+      <div class="chips-grid" id="chips-grid">
+        <div class="chip active" data-type="mcq"      onclick="toggleChip(this)"><span class="chip-icon">📝</span>Standard MCQ</div>
+        <div class="chip"       data-type="incorrect" onclick="toggleChip(this)"><span class="chip-icon">❌</span>Incorrect Statement</div>
+        <div class="chip"       data-type="except"    onclick="toggleChip(this)"><span class="chip-icon">🔍</span>EXCEPT Type</div>
+        <div class="chip"       data-type="assertion" onclick="toggleChip(this)"><span class="chip-icon">🔗</span>Assertion-Reason</div>
+        <div class="chip"       data-type="match"     onclick="toggleChip(this)"><span class="chip-icon">🗂️</span>Match the Column</div>
+        <div class="chip"       data-type="statement" onclick="toggleChip(this)"><span class="chip-icon">📊</span>Statement-based</div>
+        <div class="chip"       data-type="sequence"  onclick="toggleChip(this)"><span class="chip-icon">🔢</span>Arrange in Sequence</div>
+        <div class="chip"       data-type="diagram"   onclick="toggleChip(this)"><span class="chip-icon">🖼️</span>Diagram-based</div>
+        <div class="chip"       data-type="clinical"  onclick="toggleChip(this)"><span class="chip-icon">🏥</span>Clinical Scenario</div>
+        <div class="chip"       data-type="analogy"   onclick="toggleChip(this)"><span class="chip-icon">🔄</span>Analogy / Pair</div>
+      </div>
+      <div class="chips-hint">Select one or more types — sent to AI to vary question style</div>
+    </div>
 
-  <!-- ─── SCRIPTS ─────────────────────────────────────────── -->
-  <script>
-    /* ── State ────────────────────────────────────────────── */
-    let lastData   = [];
-    let lastType   = '';
-    let lastTopic  = '';
-    let qzTotal    = 0;
-    let qzAnswered = 0;
-    let qzCorrect  = 0;
+    <button class="btn btn-primary" onclick="generate()">✨ Generate</button>
+    <div class="loader" id="loader"><span class="spinner"></span>Generating, please wait…</div>
+    <div class="msg" id="gen-msg"></div>
+  </div>
 
-    /* ── Helpers ──────────────────────────────────────────── */
-    function esc(s) {
-      return String(s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+  <!-- OUTPUT -->
+  <div class="card" id="output-section">
+    <div class="output-header">
+      <div class="output-title-text" id="output-title">Results</div>
+      <div class="output-badge" id="output-badge">Quiz</div>
+    </div>
+    <div id="output-body"></div>
+    <div class="score-banner" id="score-banner">
+      <span class="score-emoji" id="score-emoji">🎉</span>
+      <div class="score-big"  id="score-big">0 / 0</div>
+      <div class="score-sub"  id="score-sub">Keep it up!</div>
+    </div>
+    <button class="btn btn-download" id="download-btn" onclick="downloadPDF()">Download PDF</button>
+  </div>
 
-    function msg(el, text, type) {
-      el.textContent = text;
-      el.className = 'msg ' + (type || '');
-    }
+</main>
 
-    function cleanOpt(s) {
-      return s.replace(/^[A-D][.)]\s*/i, '');
-    }
+<script>
+/* STATE */
+let lastData=[], lastType='', lastTopic='';
+let qzTotal=0, qzAnswered=0, qzCorrect=0;
 
-    function correctLetter(raw) {
-      return (raw || '').trim().toUpperCase().charAt(0);
-    }
+/* HELPERS */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setMsg(el,t,c){ el.textContent=t; el.className='msg '+(c||''); }
+function cleanOpt(s){ return s.replace(/^[A-D][.)]\s*/i,''); }
+function correctLetter(r){ return (r||'').trim().toUpperCase().charAt(0); }
 
-    /* ── Load Topics ──────────────────────────────────────── */
-    async function loadTopics() {
-      try {
-        const r = await fetch('/topics');
-        const topics = await r.json();
-        const sel = document.getElementById('topic-select');
-        sel.innerHTML = topics.length
-          ? topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')
-          : `<option value="">— No topics yet —</option>`;
-      } catch {
-        document.getElementById('topic-select').innerHTML =
-          `<option value="">— Failed to load —</option>`;
-      }
-    }
+/* CHIPS */
+function toggleChip(el){
+  el.classList.toggle('active');
+  if(!document.querySelectorAll('#chips-grid .chip.active').length) el.classList.add('active');
+}
+function getSelectedTypes(){
+  return Array.from(document.querySelectorAll('#chips-grid .chip.active')).map(c=>c.dataset.type);
+}
+function onOutputTypeChange(){
+  const v=document.getElementById('output-type').value;
+  document.getElementById('qtype-section').style.display=(v==='flashcards')?'none':'';
+}
 
-    /* ── File Name ────────────────────────────────────────── */
-    function showFileName() {
-      const fi = document.getElementById('file-input');
-      const names = Array.from(fi.files).map(f => f.name).join(', ');
-      document.getElementById('file-name').textContent = names || 'No files chosen';
-    }
+/* LOAD TOPICS */
+async function loadTopics(){
+  try{
+    const r=await fetch('/topics');
+    const topics=await r.json();
+    const sel=document.getElementById('topic-select');
+    sel.innerHTML=topics.length
+      ? topics.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')
+      : `<option value="">No topics yet</option>`;
+  }catch{ document.getElementById('topic-select').innerHTML=`<option value="">Failed to load</option>`; }
+}
 
-    /* ── Upload ───────────────────────────────────────────── */
-    async function uploadNotes() {
-      const topic = document.getElementById('topic-input').value.trim();
-      const files = document.getElementById('file-input').files;
-      const m = document.getElementById('upload-msg');
+/* FILE NAME */
+function showFileName(){
+  const fi=document.getElementById('file-input');
+  document.getElementById('file-name').textContent=Array.from(fi.files).map(f=>f.name).join(', ')||'No files chosen';
+}
 
-      if (!topic) { msg(m, 'Please enter a topic name.', 'error'); return; }
-      if (!files.length) { msg(m, 'Please select at least one file.', 'error'); return; }
+/* UPLOAD */
+async function uploadNotes(){
+  const topic=document.getElementById('topic-input').value.trim();
+  const files=document.getElementById('file-input').files;
+  const m=document.getElementById('upload-msg');
+  if(!topic){setMsg(m,'Please enter a topic name.','error');return;}
+  if(!files.length){setMsg(m,'Please select at least one file.','error');return;}
+  const fd=new FormData();
+  fd.append('topic',topic);
+  for(const f of files) fd.append('file',f);
+  setMsg(m,'Uploading...','');
+  try{
+    const r=await fetch('/upload',{method:'POST',body:fd});
+    const t=await r.text();
+    if(r.ok){setMsg(m,'Uploaded: '+t,'success');loadTopics();}
+    else{setMsg(m,'Error: '+t,'error');}
+  }catch(e){setMsg(m,'Upload failed: '+e.message,'error');}
+}
 
-      const fd = new FormData();
-      fd.append('topic', topic);
-      for (const f of files) fd.append('file', f);
+/* GENERATE */
+async function generate(){
+  const topic=document.getElementById('topic-select').value;
+  const output=document.getElementById('output-type').value;
+  const diff=document.getElementById('difficulty').value;
+  const n=parseInt(document.getElementById('num-questions').value)||5;
+  const qtypes=getSelectedTypes();
+  const m=document.getElementById('gen-msg');
+  const loader=document.getElementById('loader');
+  if(!topic){setMsg(m,'Please select a topic.','error');return;}
 
-      msg(m, 'Uploading…', '');
-      try {
-        const r = await fetch('/upload', { method: 'POST', body: fd });
-        const t = await r.text();
-        if (r.ok) { msg(m, '✅ ' + t, 'success'); loadTopics(); }
-        else       { msg(m, '❌ ' + t, 'error'); }
-      } catch (e) {
-        msg(m, '❌ Upload failed: ' + e.message, 'error');
-      }
-    }
+  setMsg(m,'','');
+  loader.classList.add('visible');
+  document.getElementById('output-section').classList.remove('visible');
+  document.getElementById('download-btn').classList.remove('visible');
+  document.getElementById('score-banner').classList.remove('visible');
+  qzTotal=qzAnswered=qzCorrect=0;
 
-    /* ── Generate ─────────────────────────────────────────── */
-    async function generate() {
-      const topic  = document.getElementById('topic-select').value;
-      const output = document.getElementById('output-type').value;
-      const diff   = document.getElementById('difficulty').value;
-      const n      = parseInt(document.getElementById('num-questions').value) || 5;
-      const m      = document.getElementById('gen-msg');
-      const loader = document.getElementById('loader');
+  try{
+    const r=await fetch('/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({topic,output_type:output,difficulty:diff,number_of_questions:n,question_types:qtypes})
+    });
+    const data=await r.json();
+    loader.classList.remove('visible');
+    if(!r.ok){setMsg(m,'Error: '+(data.error||'Generation failed.'),'error');return;}
+    if(!Array.isArray(data)||!data.length){setMsg(m,'No output received. Try again.','error');return;}
+    lastData=data; lastType=output; lastTopic=topic;
+    renderOutput(data,output,topic);
+    document.getElementById('output-section').classList.add('visible');
+    document.getElementById('download-btn').classList.add('visible');
+    document.getElementById('output-section').scrollIntoView({behavior:'smooth'});
+  }catch(e){
+    loader.classList.remove('visible');
+    setMsg(m,'Error: '+e.message,'error');
+  }
+}
 
-      if (!topic) { msg(m, 'Please select a topic.', 'error'); return; }
+/* RENDER ROUTER */
+function renderOutput(data,type,topic){
+  const body=document.getElementById('output-body');
+  const titleEl=document.getElementById('output-title');
+  const badge=document.getElementById('output-badge');
+  const labels={quiz:'Quiz (MCQ)',flashcards:'Flashcards','question paper':'Question Paper'};
+  const colors={quiz:['#5B5FEF','#EEEFFE'],flashcards:['#7C3AED','#F3EEFF'],'question paper':['#0369A1','#E0F2FE']};
+  titleEl.textContent=`${labels[type]||type} — ${topic}`;
+  const [c,bg]=colors[type]||colors.quiz;
+  badge.textContent=labels[type]||type; badge.style.color=c; badge.style.background=bg;
+  body.innerHTML='';
+  if(type==='flashcards') renderFlashcards(data,body);
+  else if(type==='quiz')  renderQuiz(data,body);
+  else                    renderPaper(data,body);
+}
 
-      msg(m, '', '');
-      loader.classList.add('visible');
-      document.getElementById('output-section').classList.remove('visible');
-      document.getElementById('download-btn').classList.remove('visible');
-      document.getElementById('score-banner').classList.remove('visible');
+/* BUILD SPECIAL BLOCKS */
+function buildTypeTag(t,color,bg){
+  return t?`<span class="q-type-tag" style="color:${color};background:${bg}">${esc(t)}</span>`:'';
+}
+function buildAssert(item){
+  if(!item.assertion&&!item.reason) return '';
+  return `<div class="assert-row">
+    <div class="assert-box"><div class="assert-box-label">Assertion (A)</div><div class="assert-box-text">${esc(item.assertion||'')}</div></div>
+    <div class="assert-box"><div class="assert-box-label">Reason (R)</div><div class="assert-box-text">${esc(item.reason||'')}</div></div>
+  </div>`;
+}
+function buildMatch(item){
+  if(!item.column_a||!item.column_b) return '';
+  const rows=Math.max(item.column_a.length,item.column_b.length);
+  let h=`<table class="match-table"><thead><tr><th>Column A</th><th>Column B</th></tr></thead><tbody>`;
+  for(let i=0;i<rows;i++) h+=`<tr><td>${item.column_a[i]?esc(item.column_a[i]):''}</td><td>${item.column_b[i]?esc(item.column_b[i]):''}</td></tr>`;
+  return h+'</tbody></table>';
+}
+function buildStatements(item){
+  if(!item.statements||!Array.isArray(item.statements)) return '';
+  return `<ul class="stmt-list">${item.statements.map((s,i)=>`<li><span class="stmt-num">${i+1}.</span>${esc(s)}</li>`).join('')}</ul>`;
+}
+function buildSequence(item){
+  if(!item.sequence||!Array.isArray(item.sequence)) return '';
+  return `<ul class="sequence-list">${item.sequence.map((s,i)=>`<li><span class="sequence-num">${i+1}</span>${esc(s)}</li>`).join('')}</ul>`;
+}
 
-      qzTotal = qzAnswered = qzCorrect = 0;
+/* QUIZ */
+function renderQuiz(data,body){
+  qzTotal=data.length; qzAnswered=0; qzCorrect=0;
+  const pb=document.createElement('div');
+  pb.className='quiz-progress-bar'; pb.id='qz-progress';
+  pb.innerHTML=`<span class="quiz-progress-text" id="qz-prog-text">0 / ${data.length} answered</span>
+    <div class="progress-track"><div class="progress-fill" id="qz-prog-fill"></div></div>`;
+  body.appendChild(pb);
 
-      try {
-        const r = await fetch('/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ topic, output_type: output, difficulty: diff, number_of_questions: n })
-        });
+  data.forEach((item,qi)=>{
+    const correct=correctLetter(item.answer);
+    const block=document.createElement('div');
+    block.className='q-block'; block.dataset.answered='';
+    const tag=buildTypeTag(item.q_type,'#7C3AED','#F3EEFF');
+    let html=`<div class="q-num">Question ${qi+1} of ${data.length} ${tag}</div>
+      <div class="q-text">${esc(item.question)}</div>`;
+    html+=buildAssert(item)+buildMatch(item)+buildStatements(item)+buildSequence(item);
+    const opts=(item.options||[]).map((opt,idx)=>{
+      const l=String.fromCharCode(65+idx);
+      return `<div class="quiz-option" data-letter="${l}" data-correct="${correct}" onclick="pickOption(this,${qi})">
+        <span class="opt-pill">${l}</span>
+        <span class="opt-text">${esc(cleanOpt(opt))}</span>
+        <span class="opt-icon"></span>
+      </div>`;
+    }).join('');
+    block.innerHTML=html+opts;
+    body.appendChild(block);
+  });
+}
 
-        const data = await r.json();
-        loader.classList.remove('visible');
+function pickOption(el,qi){
+  const block=el.closest('.q-block');
+  if(block.dataset.answered==='true') return;
+  block.dataset.answered='true';
+  const chosen=el.dataset.letter, correct=el.dataset.correct;
+  const all=block.querySelectorAll('.quiz-option');
+  all.forEach(o=>{o.classList.add('locked');o.onclick=null;});
+  if(chosen===correct){
+    el.classList.add('correct'); el.querySelector('.opt-icon').textContent='✓'; qzCorrect++;
+  }else{
+    el.classList.add('wrong'); el.querySelector('.opt-icon').textContent='✗';
+    all.forEach(o=>{if(o.dataset.letter===correct){o.classList.add('correct');o.querySelector('.opt-icon').textContent='✓';}});
+  }
+  qzAnswered++;
+  const pct=Math.round((qzAnswered/qzTotal)*100);
+  const fill=document.getElementById('qz-prog-fill');
+  const txt=document.getElementById('qz-prog-text');
+  if(fill) fill.style.width=pct+'%';
+  if(txt)  txt.textContent=`${qzAnswered} / ${qzTotal} answered`;
+  if(qzAnswered===qzTotal) showScore();
+}
 
-        if (!r.ok) { msg(m, '❌ ' + (data.error || 'Generation failed.'), 'error'); return; }
-        if (!Array.isArray(data) || !data.length) { msg(m, '❌ No output received. Try again.', 'error'); return; }
+function showScore(){
+  const banner=document.getElementById('score-banner');
+  const pct=Math.round((qzCorrect/qzTotal)*100);
+  const emoji=pct>=80?'🎉':pct>=50?'👍':'😅';
+  const sub=pct>=80?'Excellent! You nailed it.':pct>=50?'Good effort! Keep practicing.':"Don't give up — try again!";
+  const cls=pct>=80?'great':pct>=50?'okay':'poor';
+  banner.className=`score-banner ${cls} visible`;
+  document.getElementById('score-emoji').textContent=emoji;
+  document.getElementById('score-big').textContent=`${qzCorrect} / ${qzTotal} Correct — ${pct}%`;
+  document.getElementById('score-sub').textContent=sub;
+  banner.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 
-        lastData  = data;
-        lastType  = output;
-        lastTopic = topic;
+/* FLASHCARDS */
+function renderFlashcards(data,body){
+  const hint=document.createElement('div');
+  hint.className='fc-hint';
+  hint.innerHTML='<span>👆</span> Tap any card to reveal the answer';
+  body.appendChild(hint);
+  data.forEach((item,i)=>{
+    const card=document.createElement('div');
+    card.className='flashcard';
+    card.innerHTML=`
+      <div class="fc-front">
+        <div class="fc-num">Card ${i+1} of ${data.length}</div>
+        <div class="fc-label">Question</div>
+        <div class="fc-content">${esc(item.question)}</div>
+        <span class="fc-tap-hint">tap to flip</span>
+      </div>
+      <div class="fc-back">
+        <div class="fc-label">Answer</div>
+        <div class="fc-content">${esc(item.answer)}</div>
+      </div>`;
+    card.addEventListener('click',()=>card.classList.toggle('flipped'));
+    body.appendChild(card);
+  });
+}
 
-        renderOutput(data, output, topic);
-        document.getElementById('output-section').classList.add('visible');
-        document.getElementById('download-btn').classList.add('visible');
-        document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+/* QUESTION PAPER */
+function renderPaper(data,body){
+  const info=document.createElement('div');
+  info.className='exam-info';
+  info.innerHTML='📄 <strong>Exam Mode</strong> — Answers hidden. Download PDF to print.';
+  body.appendChild(info);
+  data.forEach((item,i)=>{
+    const block=document.createElement('div');
+    block.className='q-block';
+    const tag=buildTypeTag(item.q_type,'#0369A1','#E0F2FE');
+    let html=`<div class="q-num">Q${i+1} ${tag}</div>
+      <div class="q-text">${esc(item.question)}</div>`;
+    html+=buildAssert(item)+buildMatch(item)+buildStatements(item)+buildSequence(item);
+    const opts=(item.options||[]).map((opt,idx)=>{
+      const l=String.fromCharCode(65+idx);
+      return `<div class="paper-option"><span class="paper-opt-label">${l}.</span><span class="paper-opt-text">${esc(cleanOpt(opt))}</span></div>`;
+    }).join('');
+    block.innerHTML=html+opts;
+    body.appendChild(block);
+  });
+}
 
-      } catch (e) {
-        loader.classList.remove('visible');
-        msg(m, '❌ Error: ' + e.message, 'error');
-      }
-    }
+/* PDF EXPORT */
+function downloadPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth();
+  const ph=doc.internal.pageSize.getHeight();
+  const ML=52,MR=52,maxW=pw-ML-MR,LH=15;
+  let y=0;
+  function newPage(){doc.addPage();y=60;}
+  function checkY(n){if(y+n>ph-50)newPage();}
 
-    /* ── Render Router ────────────────────────────────────── */
-    function renderOutput(data, type, topic) {
-      const body   = document.getElementById('output-body');
-      const titleEl = document.getElementById('output-title');
-      const badge  = document.getElementById('output-badge');
+  /* Header */
+  doc.setFillColor(11,9,40); doc.rect(0,0,pw,72,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
+  doc.text("JVR'S StudyAI",ML,40);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(160,165,220);
+  doc.text(document.getElementById('output-title').textContent,ML,57);
+  y=92;
+  doc.setDrawColor(91,95,239); doc.setLineWidth(1.5); doc.line(ML,y,pw-MR,y); y+=20;
+  const now=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,155,180);
+  doc.text(`Generated: ${now}   Topic: ${lastTopic}   Mode: ${lastType}`,ML,y); y+=22;
 
-      const labels = { quiz: 'Quiz (MCQ)', flashcards: 'Flashcards', 'question paper': 'Question Paper' };
-      const colors = { quiz: ['#5B5FEF','#EEEFFE'], flashcards: ['#7C3AED','#F3EEFF'], 'question paper': ['#0369A1','#E0F2FE'] };
+  if(lastType==='flashcards'){
+    lastData.forEach((item,i)=>{
+      const qL=doc.splitTextToSize(item.question,maxW-16);
+      const aL=doc.splitTextToSize(item.answer,maxW-16);
+      const qH=qL.length*LH+26, aH=aL.length*LH+26;
+      checkY(qH+aH+20);
+      doc.setFillColor(248,249,255); doc.setDrawColor(228,232,240); doc.setLineWidth(0.8);
+      doc.roundedRect(ML,y,maxW,qH,6,6,'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(138,147,176);
+      doc.text(`CARD ${i+1}  QUESTION`,ML+10,y+13);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(15,22,48);
+      doc.text(qL,ML+10,y+24); y+=qH+6;
+      doc.setFillColor(238,238,254); doc.setDrawColor(199,210,254);
+      doc.roundedRect(ML,y,maxW,aH,6,6,'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(91,95,239);
+      doc.text('ANSWER',ML+10,y+13);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(55,48,163);
+      doc.text(aL,ML+10,y+24); y+=aH+16;
+    });
 
-      titleEl.textContent = `${labels[type] || type} — ${topic}`;
-      const [c, bg] = colors[type] || colors.quiz;
-      badge.textContent = labels[type] || type;
-      badge.style.color      = c;
-      badge.style.background = bg;
-
-      body.innerHTML = '';
-
-      if (type === 'flashcards')       renderFlashcards(data, body);
-      else if (type === 'quiz')        renderQuiz(data, body);
-      else                             renderPaper(data, body);
-    }
-
-    /* ════════════════════════════════════════════════════════
-       QUIZ — Interactive MCQ
-    ════════════════════════════════════════════════════════ */
-    function renderQuiz(data, body) {
-      qzTotal = data.length; qzAnswered = 0; qzCorrect = 0;
-
-      /* Progress bar */
-      const pb = document.createElement('div');
-      pb.className = 'quiz-progress-bar';
-      pb.id = 'qz-progress';
-      pb.innerHTML = `
-        <span class="quiz-progress-text" id="qz-prog-text">0 / ${data.length} answered</span>
-        <div class="progress-track"><div class="progress-fill" id="qz-prog-fill"></div></div>`;
-      body.appendChild(pb);
-
-      data.forEach((item, qi) => {
-        const correct = correctLetter(item.answer);
-        const block = document.createElement('div');
-        block.className = 'q-block';
-        block.dataset.answered = '';
-
-        const optsHtml = (item.options || []).map((opt, idx) => {
-          const letter = String.fromCharCode(65 + idx);
-          return `
-            <div class="quiz-option"
-                 data-letter="${letter}"
-                 data-correct="${correct}"
-                 onclick="pickOption(this,${qi})">
-              <span class="opt-pill">${letter}</span>
-              <span class="opt-text">${esc(cleanOpt(opt))}</span>
-              <span class="opt-icon"></span>
-            </div>`;
-        }).join('');
-
-        block.innerHTML = `
-          <div class="q-num">Question ${qi + 1} of ${data.length}</div>
-          <div class="q-text">${esc(item.question)}</div>
-          ${optsHtml}`;
-
-        body.appendChild(block);
+  }else if(lastType==='quiz'){
+    lastData.forEach((item,i)=>{
+      const correct=correctLetter(item.answer);
+      const qL=doc.splitTextToSize(`Q${i+1}.  ${item.question}`,maxW);
+      checkY(qL.length*LH+(item.options||[]).length*(LH+8)+24);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(15,22,48);
+      doc.text(qL,ML,y); y+=qL.length*LH+8;
+      (item.options||[]).forEach((opt,idx)=>{
+        const l=String.fromCharCode(65+idx), isC=(l===correct);
+        const oL=doc.splitTextToSize(`${l}.  ${cleanOpt(opt)}`,maxW-18);
+        const oH=oL.length*LH+7;
+        checkY(oH+6);
+        if(isC){doc.setFillColor(220,252,231);doc.setDrawColor(134,239,172);doc.setLineWidth(0.5);doc.roundedRect(ML,y-12,maxW,oH+4,4,4,'FD');}
+        doc.setFont('helvetica',isC?'bold':'normal'); doc.setFontSize(10);
+        doc.setTextColor(isC?22:100,isC?163:110,isC?74:110);
+        doc.text(oL,ML+10,y); y+=oL.length*LH+6;
       });
-    }
+      y+=12;
+    });
 
-    function pickOption(el, qi) {
-      const block = el.closest('.q-block');
-      if (block.dataset.answered === 'true') return;
-      block.dataset.answered = 'true';
-
-      const chosen  = el.dataset.letter;
-      const correct = el.dataset.correct;
-      const allOpts = block.querySelectorAll('.quiz-option');
-
-      /* Lock all options immediately */
-      allOpts.forEach(o => { o.classList.add('locked'); o.onclick = null; });
-
-      if (chosen === correct) {
-        el.classList.add('correct');
-        el.querySelector('.opt-icon').textContent = '✓';
-        qzCorrect++;
-      } else {
-        el.classList.add('wrong');
-        el.querySelector('.opt-icon').textContent = '✗';
-        /* Highlight the correct option */
-        allOpts.forEach(o => {
-          if (o.dataset.letter === correct) {
-            o.classList.add('correct');
-            o.querySelector('.opt-icon').textContent = '✓';
-          }
-        });
-      }
-
-      qzAnswered++;
-
-      /* Update progress */
-      const pct = Math.round((qzAnswered / qzTotal) * 100);
-      const fill = document.getElementById('qz-prog-fill');
-      const text = document.getElementById('qz-prog-text');
-      if (fill) fill.style.width = pct + '%';
-      if (text) text.textContent = `${qzAnswered} / ${qzTotal} answered`;
-
-      /* Show score when done */
-      if (qzAnswered === qzTotal) showScore();
-    }
-
-    function showScore() {
-      const banner = document.getElementById('score-banner');
-      const pct    = Math.round((qzCorrect / qzTotal) * 100);
-      const emoji  = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '😅';
-      const sub    = pct >= 80 ? 'Excellent work! You nailed it.' : pct >= 50 ? 'Good effort! Keep practicing.' : 'Don\'t give up — try again!';
-      const cls    = pct >= 80 ? 'great' : pct >= 50 ? 'okay' : 'poor';
-
-      banner.className = `score-banner ${cls} visible`;
-      document.getElementById('score-emoji').textContent = emoji;
-      document.getElementById('score-big').textContent   = `${qzCorrect} / ${qzTotal} Correct — ${pct}%`;
-      document.getElementById('score-sub').textContent   = sub;
-      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    /* ════════════════════════════════════════════════════════
-       FLASHCARDS — Flip on click
-    ════════════════════════════════════════════════════════ */
-    function renderFlashcards(data, body) {
-      const hint = document.createElement('div');
-      hint.className = 'fc-hint';
-      hint.innerHTML = `<span>👆</span> Tap any card to reveal the answer`;
-      body.appendChild(hint);
-
-      data.forEach((item, i) => {
-        const card = document.createElement('div');
-        card.className = 'flashcard';
-
-        card.innerHTML = `
-          <div class="fc-front">
-            <div class="fc-num">Card ${i + 1} of ${data.length}</div>
-            <div class="fc-label">Question</div>
-            <div class="fc-content">${esc(item.question)}</div>
-            <span class="fc-tap-hint">tap to flip →</span>
-          </div>
-          <div class="fc-back">
-            <div class="fc-label">✦ Answer</div>
-            <div class="fc-content">${esc(item.answer)}</div>
-          </div>`;
-
-        card.addEventListener('click', () => card.classList.toggle('flipped'));
-        body.appendChild(card);
+  }else{
+    lastData.forEach((item,i)=>{
+      const qL=doc.splitTextToSize(`Q${i+1}.  ${item.question}`,maxW);
+      checkY(qL.length*LH+(item.options||[]).length*(LH+8)+24);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(15,22,48);
+      doc.text(qL,ML,y); y+=qL.length*LH+8;
+      if(item.assertion){const aL=doc.splitTextToSize(`Assertion: ${item.assertion}`,maxW-10);checkY(aL.length*LH+6);doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(60,60,120);doc.text(aL,ML+10,y);y+=aL.length*LH+4;}
+      if(item.reason){const rL=doc.splitTextToSize(`Reason: ${item.reason}`,maxW-10);checkY(rL.length*LH+6);doc.text(rL,ML+10,y);y+=rL.length*LH+4;}
+      if(item.statements&&Array.isArray(item.statements)){item.statements.forEach((s,si)=>{const sL=doc.splitTextToSize(`${si+1}. ${s}`,maxW-10);checkY(sL.length*LH+4);doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(70,80,110);doc.text(sL,ML+10,y);y+=sL.length*LH+3;});y+=4;}
+      (item.options||[]).forEach((opt,idx)=>{
+        const l=String.fromCharCode(65+idx);
+        const oL=doc.splitTextToSize(`${l}.  ${cleanOpt(opt)}`,maxW-14);
+        checkY(oL.length*LH+6);
+        doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(75,85,112);
+        doc.text(oL,ML+10,y);y+=oL.length*LH+6;
       });
-    }
+      y+=14;
+    });
 
-    /* ════════════════════════════════════════════════════════
-       QUESTION PAPER — Static, no answers
-    ════════════════════════════════════════════════════════ */
-    function renderPaper(data, body) {
-      const info = document.createElement('div');
-      info.className = 'exam-info';
-      info.innerHTML = `📄 <strong>Exam Mode</strong> — Answers are hidden. Download as PDF for printing.`;
-      body.appendChild(info);
+    /* Answer Key */
+    newPage();
+    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(91,95,239);
+    doc.text('ANSWER KEY',ML,y);y+=20;
+    doc.setDrawColor(91,95,239);doc.setLineWidth(0.8);doc.line(ML,y,pw-MR,y);y+=16;
+    const cols=5,colW=maxW/cols;
+    lastData.forEach((item,i)=>{
+      const col=i%cols,row=Math.floor(i/cols);
+      const cx=ML+col*colW,cy=y+row*(LH+6);
+      if(cy+LH>ph-50)return;
+      doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(30,30,60);
+      doc.text(`Q${i+1}.  ${correctLetter(item.answer)}`,cx,cy);
+    });
+  }
 
-      data.forEach((item, i) => {
-        const block = document.createElement('div');
-        block.className = 'q-block';
+  /* Footer */
+  const total=doc.internal.getNumberOfPages();
+  for(let p=1;p<=total;p++){
+    doc.setPage(p);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(170,175,195);
+    doc.text(`JVR'S StudyAI  -  Page ${p} of ${total}`,pw/2,ph-22,{align:'center'});
+    doc.setDrawColor(220,225,240);doc.setLineWidth(0.5);doc.line(ML,ph-32,pw-MR,ph-32);
+  }
+  doc.save('JVR_StudyAI_Output.pdf');
+}
 
-        const optsHtml = (item.options || []).map((opt, idx) => {
-          const letter = String.fromCharCode(65 + idx);
-          return `
-            <div class="paper-option">
-              <span class="paper-opt-label">${letter}.</span>
-              <span class="paper-opt-text">${esc(cleanOpt(opt))}</span>
-            </div>`;
-        }).join('');
-
-        block.innerHTML = `
-          <div class="q-num">Question ${i + 1}</div>
-          <div class="q-text">${esc(item.question)}</div>
-          ${optsHtml}`;
-
-        body.appendChild(block);
-      });
-    }
-
-    /* ════════════════════════════════════════════════════════
-       PDF EXPORT — Clean formatted output
-    ════════════════════════════════════════════════════════ */
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc  = new jsPDF({ unit: 'pt', format: 'a4' });
-      const pw   = doc.internal.pageSize.getWidth();
-      const ph   = doc.internal.pageSize.getHeight();
-      const ML   = 52;          // left margin
-      const MR   = 52;          // right margin
-      const maxW = pw - ML - MR;
-      const LH   = 15;          // base line height
-      let y      = 0;
-
-      /* ── helpers ── */
-      function newPage() { doc.addPage(); y = 60; }
-
-      function checkY(need) { if (y + need > ph - 50) newPage(); }
-
-      function writeText(text, x, opts = {}) {
-        const lines = doc.splitTextToSize(text, opts.w || maxW);
-        checkY(lines.length * LH + (opts.pad || 0));
-        doc.text(lines, x, y);
-        y += lines.length * LH + (opts.gap || 4);
-        return lines.length;
-      }
-
-      /* ── Cover header ── */
-      doc.setFillColor(14, 11, 46);
-      doc.rect(0, 0, pw, 72, 'F');
-
-      doc.setFillColor(91, 95, 239, 0.3);
-      doc.ellipse(pw - 60, 36, 120, 80, 'F');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.setTextColor(255, 255, 255);
-      doc.text("JVR'S StudyAI", ML, 40);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(160, 165, 220);
-      const titleLabel = document.getElementById('output-title').textContent;
-      doc.text(titleLabel, ML, 58);
-
-      y = 92;
-
-      /* ── Divider ── */
-      doc.setDrawColor(91, 95, 239);
-      doc.setLineWidth(1.5);
-      doc.line(ML, y, pw - MR, y);
-      y += 20;
-
-      /* ── Meta line ── */
-      const now = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(150, 155, 180);
-      doc.text(`Generated: ${now}   ·   Topic: ${lastTopic}   ·   Mode: ${lastType}`, ML, y);
-      y += 22;
-
-      /* ══════════════════════════════════
-         FLASHCARDS PDF
-      ══════════════════════════════════ */
-      if (lastType === 'flashcards') {
-        lastData.forEach((item, i) => {
-          const qLines = doc.splitTextToSize(item.question, maxW - 16);
-          const aLines = doc.splitTextToSize(item.answer,   maxW - 20);
-          const qBoxH  = qLines.length * LH + 26;
-          const aBoxH  = aLines.length * LH + 26;
-
-          checkY(qBoxH + aBoxH + 20);
-
-          /* Question box */
-          doc.setFillColor(248, 249, 255);
-          doc.setDrawColor(228, 232, 240);
-          doc.setLineWidth(0.8);
-          doc.roundedRect(ML, y, maxW, qBoxH, 6, 6, 'FD');
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(138, 147, 176);
-          doc.text(`CARD ${i + 1}  ·  QUESTION`, ML + 10, y + 13);
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.setTextColor(15, 22, 48);
-          doc.text(qLines, ML + 10, y + 24);
-          y += qBoxH + 6;
-
-          /* Answer box */
-          doc.setFillColor(238, 238, 254);
-          doc.setDrawColor(199, 210, 254);
-          doc.roundedRect(ML, y, maxW, aBoxH, 6, 6, 'FD');
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(91, 95, 239);
-          doc.text('✦  ANSWER', ML + 10, y + 13);
-
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10);
-          doc.setTextColor(55, 48, 163);
-          doc.text(aLines, ML + 10, y + 24);
-          y += aBoxH + 16;
-        });
-
-      /* ══════════════════════════════════
-         QUIZ PDF — questions + highlighted correct answers
-      ══════════════════════════════════ */
-      } else if (lastType === 'quiz') {
-        lastData.forEach((item, i) => {
-          const correct  = correctLetter(item.answer);
-          const qLines   = doc.splitTextToSize(`Q${i + 1}.  ${item.question}`, maxW);
-          const optsEst  = (item.options || []).length * (LH + 8) + 10;
-          checkY(qLines.length * LH + optsEst + 14);
-
-          /* Question text */
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          doc.setTextColor(15, 22, 48);
-          doc.text(qLines, ML, y);
-          y += qLines.length * LH + 8;
-
-          /* Options */
-          (item.options || []).forEach((opt, idx) => {
-            const letter    = String.fromCharCode(65 + idx);
-            const isCorrect = letter === correct;
-            const oLines    = doc.splitTextToSize(`${letter}.  ${cleanOpt(opt)}`, maxW - 18);
-            const oBoxH     = oLines.length * LH + 7;
-
-            checkY(oBoxH + 6);
-
-            if (isCorrect) {
-              doc.setFillColor(220, 252, 231);
-              doc.setDrawColor(134, 239, 172);
-              doc.setLineWidth(0.5);
-              doc.roundedRect(ML, y - 12, maxW, oBoxH + 4, 4, 4, 'FD');
-            }
-
-            doc.setFont('helvetica', isCorrect ? 'bold' : 'normal');
-            doc.setFontSize(10);
-            doc.setTextColor(
-              isCorrect ? 22  : 100,
-              isCorrect ? 163 : 110,
-              isCorrect ? 74  : 110
-            );
-            doc.text(oLines, ML + 10, y);
-            y += oLines.length * LH + 6;
-          });
-
-          y += 12; /* gap between questions */
-        });
-
-      /* ══════════════════════════════════
-         QUESTION PAPER PDF — no answers shown
-      ══════════════════════════════════ */
-      } else {
-        lastData.forEach((item, i) => {
-          const qLines  = doc.splitTextToSize(`Q${i + 1}.  ${item.question}`, maxW);
-          const optsEst = (item.options || []).length * (LH + 8) + 10;
-          checkY(qLines.length * LH + optsEst + 14);
-
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
-          doc.setTextColor(15, 22, 48);
-          doc.text(qLines, ML, y);
-          y += qLines.length * LH + 8;
-
-          (item.options || []).forEach((opt, idx) => {
-            const letter = String.fromCharCode(65 + idx);
-            const oLines = doc.splitTextToSize(`${letter}.  ${cleanOpt(opt)}`, maxW - 14);
-            checkY(oLines.length * LH + 6);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.setTextColor(75, 85, 112);
-            doc.text(oLines, ML + 10, y);
-            y += oLines.length * LH + 6;
-          });
-
-          y += 14;
-        });
-
-        /* ── Answer Key (new page) ── */
-        newPage();
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(91, 95, 239);
-        doc.text('ANSWER KEY', ML, y);
-        y += 20;
-
-        doc.setDrawColor(91, 95, 239);
-        doc.setLineWidth(0.8);
-        doc.line(ML, y, pw - MR, y);
-        y += 16;
-
-        const cols  = 5;
-        const colW  = maxW / cols;
-
-        lastData.forEach((item, i) => {
-          const col = i % cols;
-          const row = Math.floor(i / cols);
-          const cx  = ML + col * colW;
-          const cy  = y + row * (LH + 6);
-
-          if (cy + LH > ph - 50) { /* overflow guard */ return; }
-
-          const correct = correctLetter(item.answer);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10);
-          doc.setTextColor(30, 30, 60);
-          doc.text(`Q${i + 1}.  ${correct}`, cx, cy);
-        });
-
-        y += (Math.ceil(lastData.length / cols)) * (LH + 6) + 10;
-      }
-
-      /* ── Footer on every page ── */
-      const total = doc.internal.getNumberOfPages();
-      for (let p = 1; p <= total; p++) {
-        doc.setPage(p);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(170, 175, 195);
-        doc.text(`JVR'S StudyAI  ·  Page ${p} of ${total}`, pw / 2, ph - 22, { align: 'center' });
-        doc.setDrawColor(220, 225, 240);
-        doc.setLineWidth(0.5);
-        doc.line(ML, ph - 32, pw - MR, ph - 32);
-      }
-
-      doc.save('JVR_StudyAI_Output.pdf');
-    }
-
-    /* ── Init ──────────────────────────────────────────────── */
-    loadTopics();
-  </script>
+loadTopics();
+</script>
 </body>
 </html>
