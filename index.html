@@ -4,345 +4,726 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JVR'S StudyAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ─── RESET ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #F2F4FA;
+      --surface:     #FFFFFF;
+      --border:      #E4E8F0;
+      --accent:      #5B5FEF;
+      --accent-dim:  #EEEFFE;
+      --accent-dark: #4347C8;
+      --success:     #16A34A;
+      --success-bg:  #DCFCE7;
+      --success-bd:  #86EFAC;
+      --error:       #DC2626;
+      --error-bg:    #FEE2E2;
+      --error-bd:    #FCA5A5;
+      --text:        #0F1630;
+      --text-mid:    #4B5570;
+      --text-muted:  #8A93B0;
+      --radius:      18px;
+      --radius-sm:   10px;
+      --shadow:      0 2px 8px rgba(15,22,48,0.07), 0 0 0 1px var(--border);
+      --shadow-lg:   0 8px 32px rgba(91,95,239,0.13);
+    }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
       min-height: 100vh;
-      padding: 30px 16px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
     }
 
-    .page-title {
+    /* ─── HEADER ─────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(140deg, #0E0B2E 0%, #1E1A5E 50%, #2E2A8E 100%);
+      padding: 44px 24px 52px;
       text-align: center;
-      font-size: 2.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 20% 80%, rgba(91,95,239,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 20%, rgba(129,140,248,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-dots {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
       font-weight: 800;
       color: #fff;
-      letter-spacing: 2px;
-      margin-bottom: 6px;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      letter-spacing: -1px;
+      position: relative;
+      z-index: 1;
+      line-height: 1;
     }
 
-    .page-subtitle {
-      text-align: center;
-      color: rgba(255,255,255,0.75);
-      margin-bottom: 32px;
-      font-size: 0.95rem;
-      letter-spacing: 1px;
+    .logo-accent { color: #818CF8; }
+
+    .logo-badge {
+      display: inline-block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #818CF8, #C4B5FD);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      vertical-align: super;
+      margin-left: 4px;
     }
 
-    .container {
-      max-width: 720px;
+    .tagline {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.52);
+      margin-top: 10px;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-pills {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+
+    .header-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 0.3px;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    .main {
+      max-width: 760px;
       margin: 0 auto;
+      padding: 28px 20px 72px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 18px;
     }
 
+    /* ─── CARD ───────────────────────────────────────────── */
     .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 32px 28px;
-      box-shadow: 0 8px 40px rgba(80,40,160,0.13);
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.4s ease both;
     }
 
-    .card h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #5b21b6;
-      margin-bottom: 22px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .card:nth-child(2) { animation-delay: 0.08s; }
+    .card:nth-child(3) { animation-delay: 0.14s; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0);    }
     }
 
-    .card h2 .icon {
-      font-size: 1.3rem;
-    }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #6b7280;
-      margin-bottom: 6px;
-      margin-top: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    label:first-of-type { margin-top: 0; }
-
-    input[type="text"],
-    select {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 9px;
-      font-size: 0.97rem;
-      color: #1f2937;
-      background: #f9fafb;
-      outline: none;
-      transition: border 0.2s;
-    }
-
-    input[type="text"]:focus,
-    select:focus {
-      border-color: #7c3aed;
-      background: #fff;
-    }
-
-    .file-label {
+    .card-header {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 11px 14px;
-      border: 1.5px dashed #c4b5fd;
-      border-radius: 9px;
-      background: #f5f3ff;
-      cursor: pointer;
-      transition: border 0.2s, background 0.2s;
+      margin-bottom: 24px;
     }
 
-    .file-label:hover {
-      border-color: #7c3aed;
-      background: #ede9fe;
-    }
-
-    .file-label input[type="file"] { display: none; }
-
-    .file-label .file-icon { font-size: 1.4rem; }
-
-    .file-label .file-text {
-      font-size: 0.88rem;
-      color: #7c3aed;
-      font-weight: 600;
-    }
-
-    #file-name {
-      font-size: 0.82rem;
-      color: #6b7280;
-      margin-top: 6px;
-      min-height: 18px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 13px;
-      border: none;
+    .card-icon {
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      font-size: 1rem;
+      background: var(--accent-dim);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
       font-weight: 700;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: 0.5px;
+      color: var(--text);
     }
 
-    .btn:active { transform: scale(0.98); }
+    /* ─── FORM ───────────────────────────────────────────── */
+    .field { margin-bottom: 16px; }
 
-    .btn-primary {
-      background: linear-gradient(90deg, #7c3aed, #6d28d9);
-      color: #fff;
-    }
-
-    .btn-primary:hover { opacity: 0.92; }
-
-    .btn-download {
-      background: linear-gradient(90deg, #059669, #047857);
-      color: #fff;
-      display: none;
-      margin-top: 14px;
-    }
-
-    .btn-download.visible { display: block; }
-
-    .msg {
-      margin-top: 12px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      min-height: 20px;
-      border-radius: 7px;
-      padding: 0;
-    }
-
-    .msg.success { color: #059669; }
-    .msg.error   { color: #dc2626; }
-
-    /* ── Output ── */
-    #output-section { display: none; }
-
-    #output-section.visible { display: block; }
-
-    .output-title {
-      font-size: 1rem;
+    .field-label {
+      display: block;
+      font-size: 0.73rem;
       font-weight: 700;
-      color: #5b21b6;
-      margin-bottom: 18px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #ede9fe;
-    }
-
-    .q-block {
-      background: #f9fafb;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 18px 20px;
-      margin-bottom: 16px;
-    }
-
-    .q-text {
-      font-weight: 700;
-      color: #1f2937;
-      margin-bottom: 12px;
-      font-size: 0.97rem;
-      line-height: 1.5;
-    }
-
-    .option {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 8px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
       margin-bottom: 6px;
-      font-size: 0.92rem;
-      color: #374151;
-      border: 1.5px solid transparent;
-      transition: background 0.15s;
     }
 
-    .option.correct {
-      background: #d1fae5;
-      border-color: #6ee7b7;
-      color: #065f46;
-      font-weight: 700;
-    }
-
-    .option .opt-label {
-      font-weight: 700;
-      min-width: 22px;
-    }
-
-    .tick {
-      margin-left: auto;
-      font-size: 1rem;
-    }
-
-    /* Flashcard */
-    .flash-block {
-      background: #f5f3ff;
-      border: 1.5px solid #c4b5fd;
-      border-radius: 12px;
-      padding: 18px 20px;
-      margin-bottom: 14px;
-    }
-
-    .flash-q {
-      font-weight: 700;
-      color: #1f2937;
-      margin-bottom: 10px;
-      font-size: 0.97rem;
-    }
-
-    .flash-a {
-      background: #ede9fe;
-      border-left: 4px solid #7c3aed;
-      border-radius: 0 8px 8px 0;
-      padding: 10px 14px;
-      color: #4c1d95;
-      font-weight: 600;
-      font-size: 0.92rem;
-    }
-
-    /* Loader */
-    .loader {
-      display: none;
-      text-align: center;
-      padding: 18px 0 6px;
-      color: #7c3aed;
-      font-weight: 600;
-      font-size: 0.92rem;
-    }
-
-    .loader.visible { display: block; }
-
-    .spinner {
-      display: inline-block;
-      width: 22px;
-      height: 22px;
-      border: 3px solid #ede9fe;
-      border-top-color: #7c3aed;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Difficulty row */
-    .row-2 {
+    .field-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
 
-    @media (max-width: 500px) {
+    input[type="text"], select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.93rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: #FAFBFF;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238A93B0'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 34px;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(91,95,239,0.12);
+    }
+
+    .drop-zone {
+      border: 2px dashed #C7D2FE;
+      border-radius: var(--radius-sm);
+      background: #F7F8FF;
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+
+    .drop-icon { font-size: 1.7rem; display: block; margin-bottom: 6px; }
+    .drop-text  { font-size: 0.87rem; color: var(--accent); font-weight: 600; }
+    .drop-hint  { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; }
+
+    #file-name {
+      font-size: 0.79rem;
+      color: var(--text-muted);
+      margin-top: 7px;
+    }
+
+    /* ─── BUTTONS ────────────────────────────────────────── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.1px;
+    }
+
+    .btn:active { transform: scale(0.98) !important; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      margin-top: 6px;
+      box-shadow: 0 2px 12px rgba(91,95,239,0.32);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 4px 20px rgba(91,95,239,0.42);
+      transform: translateY(-1px);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff;
+      margin-top: 18px;
+      display: none;
+      box-shadow: 0 2px 12px rgba(5,150,105,0.28);
+    }
+
+    .btn-download.visible { display: block; }
+    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(5,150,105,0.38); }
+
+    /* ─── STATUS ─────────────────────────────────────────── */
+    .msg {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      min-height: 18px;
+    }
+
+    .msg.success { color: var(--success); }
+    .msg.error   { color: var(--error); }
+
+    .loader {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px 0 4px;
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .loader.visible { display: flex; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid var(--accent-dim);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── OUTPUT SECTION ─────────────────────────────────── */
+    #output-section { display: none; }
+    #output-section.visible { display: block; }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .output-title-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .output-badge {
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ─── QUIZ ───────────────────────────────────────────── */
+    .quiz-progress-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .quiz-progress-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #818CF8);
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    .q-block {
+      background: #FAFBFF;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .q-block:hover { border-color: #C7D2FE; }
+
+    .q-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      margin-bottom: 7px;
+    }
+
+    .q-text {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.57;
+      margin-bottom: 14px;
+    }
+
+    /* Interactive quiz options */
+    .quiz-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, transform 0.15s;
+      user-select: none;
+      background: var(--surface);
+    }
+
+    .quiz-option:last-child { margin-bottom: 0; }
+
+    .quiz-option:hover:not(.locked) {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      transform: translateX(3px);
+    }
+
+    .quiz-option.locked { cursor: default; }
+
+    .quiz-option.correct {
+      background: var(--success-bg);
+      border-color: var(--success-bd);
+    }
+
+    .quiz-option.wrong {
+      background: var(--error-bg);
+      border-color: var(--error-bd);
+    }
+
+    .opt-pill {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: var(--border);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--text-mid);
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .quiz-option.correct .opt-pill {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .quiz-option.wrong .opt-pill {
+      background: var(--error);
+      color: #fff;
+    }
+
+    .opt-text {
+      font-size: 0.91rem;
+      line-height: 1.45;
+      padding-top: 4px;
+      color: var(--text-mid);
+      flex: 1;
+    }
+
+    .quiz-option.correct .opt-text { color: var(--success); font-weight: 600; }
+    .quiz-option.wrong   .opt-text { color: var(--error);   font-weight: 600; }
+
+    .opt-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      padding-top: 4px;
+      min-width: 18px;
+    }
+
+    /* Score Banner */
+    .score-banner {
+      margin-top: 22px;
+      padding: 22px 24px;
+      border-radius: 16px;
+      text-align: center;
+      display: none;
+      animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .score-banner.visible { display: block; }
+    .score-banner.great { background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); border: 1.5px solid #6EE7B7; }
+    .score-banner.okay  { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1.5px solid #FCD34D; }
+    .score-banner.poor  { background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); border: 1.5px solid #FCA5A5; }
+
+    .score-emoji { font-size: 2.4rem; margin-bottom: 8px; display: block; }
+    .score-big   { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text); }
+    .score-sub   { font-size: 0.85rem; color: var(--text-mid); margin-top: 5px; font-weight: 500; }
+
+    /* ─── QUESTION PAPER ─────────────────────────────────── */
+    .exam-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      background: #F8F9FF;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .paper-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-bottom: 5px;
+      border-radius: 7px;
+    }
+
+    .paper-opt-label {
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 22px;
+      font-size: 0.88rem;
+    }
+
+    .paper-opt-text {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      line-height: 1.45;
+    }
+
+    /* ─── FLASHCARDS ─────────────────────────────────────── */
+    .fc-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .flashcard {
+      margin-bottom: 14px;
+      cursor: pointer;
+      border-radius: 14px;
+      position: relative;
+    }
+
+    .fc-front {
+      background: #FAFBFF;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px 28px;
+      transition: border-color 0.2s;
+    }
+
+    .flashcard:hover .fc-front { border-color: #C7D2FE; }
+
+    .fc-back {
+      display: none;
+      background: linear-gradient(135deg, #EEEFFE 0%, #E0E4FF 100%);
+      border: 1.5px solid #C7D2FE;
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+
+    .flashcard.flipped .fc-front { display: none; }
+    .flashcard.flipped .fc-back {
+      display: block;
+      animation: flipReveal 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+
+    @keyframes flipReveal {
+      from { transform: perspective(700px) rotateY(-80deg) scale(0.94); opacity: 0; }
+      to   { transform: perspective(700px) rotateY(0deg)  scale(1);    opacity: 1; }
+    }
+
+    .fc-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      margin-bottom: 9px;
+    }
+
+    .fc-front .fc-label { color: var(--text-muted); }
+    .fc-back  .fc-label { color: var(--accent); }
+
+    .fc-content {
+      font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.57;
+      color: var(--text);
+    }
+
+    .fc-back .fc-content {
+      color: #3730A3;
+      font-weight: 600;
+    }
+
+    .fc-tap-hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      opacity: 0.65;
+    }
+
+    .fc-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 5px;
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 520px) {
       .card { padding: 22px 16px; }
-      .row-2 { grid-template-columns: 1fr; }
-      .page-title { font-size: 1.6rem; }
+      .field-row { grid-template-columns: 1fr; }
+      .logo { font-size: 2rem; }
+      .header { padding: 32px 18px 42px; }
+      .header-pills { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="page-title">📚 JVR'S StudyAI</div>
-  <div class="page-subtitle">Upload your notes · Generate quizzes, flashcards & papers</div>
+  <!-- ─── HEADER ──────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-dots"></div>
+    <div class="logo">📚 JVR'S <span class="logo-accent">StudyAI</span><span class="logo-badge">v2</span></div>
+    <p class="tagline">Upload once · Generate quizzes, flashcards &amp; papers forever</p>
+    <div class="header-pills">
+      <span class="header-pill">🧠 AI-Powered</span>
+      <span class="header-pill">⚡ Instant Generation</span>
+      <span class="header-pill">📄 PDF Export</span>
+    </div>
+  </header>
 
-  <div class="container">
+  <!-- ─── MAIN ─────────────────────────────────────────────── -->
+  <main class="main">
 
-    <!-- ── Upload Card ── -->
+    <!-- Upload Card -->
     <div class="card">
-      <h2><span class="icon">📤</span> Upload Notes</h2>
+      <div class="card-header">
+        <div class="card-icon">📤</div>
+        <div class="card-title">Upload Notes</div>
+      </div>
 
-      <label>Topic Name</label>
-      <input type="text" id="topic-input" placeholder="e.g. Human Reproductive System" />
+      <div class="field">
+        <label class="field-label">Topic Name</label>
+        <input type="text" id="topic-input" placeholder="e.g. Human Reproductive System" />
+      </div>
 
-      <label>Upload Files (PDF / TXT)</label>
-      <label class="file-label" for="file-input">
-        <span class="file-icon">📁</span>
-        <span class="file-text">Choose files…</span>
-        <input type="file" id="file-input" multiple accept=".pdf,.txt" onchange="showFileName()" />
-      </label>
-      <div id="file-name">No files chosen</div>
+      <div class="field">
+        <label class="field-label">Upload Files (PDF / TXT)</label>
+        <div class="drop-zone">
+          <input type="file" id="file-input" multiple accept=".pdf,.txt" onchange="showFileName()" />
+          <span class="drop-icon">📁</span>
+          <div class="drop-text">Choose or drag files here</div>
+          <div class="drop-hint">PDF and TXT · Multiple files allowed</div>
+        </div>
+        <div id="file-name">No files chosen</div>
+      </div>
 
       <button class="btn btn-primary" onclick="uploadNotes()">⬆ Upload Notes</button>
       <div class="msg" id="upload-msg"></div>
     </div>
 
-    <!-- ── Generate Card ── -->
+    <!-- Generate Card -->
     <div class="card">
-      <h2><span class="icon">⚡</span> Generate Study Material</h2>
+      <div class="card-header">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Generate Study Material</div>
+      </div>
 
-      <label>Select Topic</label>
-      <select id="topic-select">
-        <option value="">-- Loading topics… --</option>
-      </select>
+      <div class="field">
+        <label class="field-label">Select Topic</label>
+        <select id="topic-select">
+          <option value="">— Loading topics… —</option>
+        </select>
+      </div>
 
-      <div class="row-2">
-        <div>
-          <label>Output Type</label>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Output Type</label>
           <select id="output-type">
             <option value="quiz">Quiz (MCQ)</option>
             <option value="flashcards">Flashcards</option>
             <option value="question paper">Question Paper</option>
           </select>
         </div>
-        <div>
-          <label>Difficulty</label>
+        <div class="field">
+          <label class="field-label">Difficulty</label>
           <select id="difficulty">
             <option value="easy">Easy</option>
             <option value="medium" selected>Medium</option>
@@ -351,294 +732,572 @@
         </div>
       </div>
 
-      <label>Number of Questions</label>
-      <input type="text" id="num-questions" placeholder="e.g. 5" value="5" />
+      <div class="field">
+        <label class="field-label">Number of Questions</label>
+        <input type="text" id="num-questions" placeholder="e.g. 5" value="5" />
+      </div>
 
       <button class="btn btn-primary" onclick="generate()">✨ Generate</button>
-
       <div class="loader" id="loader"><span class="spinner"></span>Generating, please wait…</div>
       <div class="msg" id="gen-msg"></div>
     </div>
 
-    <!-- ── Output Card ── -->
+    <!-- Output Card -->
     <div class="card" id="output-section">
-      <div class="output-title" id="output-title">Results</div>
+      <div class="output-header">
+        <div class="output-title-text" id="output-title">Results</div>
+        <div class="output-badge" id="output-badge">Quiz</div>
+      </div>
       <div id="output-body"></div>
+      <div class="score-banner" id="score-banner">
+        <span class="score-emoji" id="score-emoji">🎉</span>
+        <div class="score-big"  id="score-big">0 / 0</div>
+        <div class="score-sub"  id="score-sub">Keep it up!</div>
+      </div>
       <button class="btn btn-download" id="download-btn" onclick="downloadPDF()">⬇ Download PDF</button>
     </div>
 
-  </div>
+  </main>
 
+  <!-- ─── SCRIPTS ─────────────────────────────────────────── -->
   <script>
-    // ── Load Topics ──────────────────────────────────────────
+    /* ── State ────────────────────────────────────────────── */
+    let lastData   = [];
+    let lastType   = '';
+    let lastTopic  = '';
+    let qzTotal    = 0;
+    let qzAnswered = 0;
+    let qzCorrect  = 0;
+
+    /* ── Helpers ──────────────────────────────────────────── */
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function msg(el, text, type) {
+      el.textContent = text;
+      el.className = 'msg ' + (type || '');
+    }
+
+    function cleanOpt(s) {
+      return s.replace(/^[A-D][.)]\s*/i, '');
+    }
+
+    function correctLetter(raw) {
+      return (raw || '').trim().toUpperCase().charAt(0);
+    }
+
+    /* ── Load Topics ──────────────────────────────────────── */
     async function loadTopics() {
       try {
-        const res = await fetch("/topics");
-        const topics = await res.json();
-        const sel = document.getElementById("topic-select");
+        const r = await fetch('/topics');
+        const topics = await r.json();
+        const sel = document.getElementById('topic-select');
         sel.innerHTML = topics.length
-          ? topics.map(t => `<option value="${t}">${t}</option>`).join("")
-          : `<option value="">-- No topics yet --</option>`;
+          ? topics.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('')
+          : `<option value="">— No topics yet —</option>`;
       } catch {
-        document.getElementById("topic-select").innerHTML =
-          `<option value="">-- Failed to load --</option>`;
+        document.getElementById('topic-select').innerHTML =
+          `<option value="">— Failed to load —</option>`;
       }
     }
 
-    // ── Show File Name ───────────────────────────────────────
+    /* ── File Name ────────────────────────────────────────── */
     function showFileName() {
-      const fi = document.getElementById("file-input");
-      const names = Array.from(fi.files).map(f => f.name).join(", ");
-      document.getElementById("file-name").textContent = names || "No files chosen";
+      const fi = document.getElementById('file-input');
+      const names = Array.from(fi.files).map(f => f.name).join(', ');
+      document.getElementById('file-name').textContent = names || 'No files chosen';
     }
 
-    // ── Upload Notes ─────────────────────────────────────────
+    /* ── Upload ───────────────────────────────────────────── */
     async function uploadNotes() {
-      const topic = document.getElementById("topic-input").value.trim();
-      const files = document.getElementById("file-input").files;
-      const msg   = document.getElementById("upload-msg");
+      const topic = document.getElementById('topic-input').value.trim();
+      const files = document.getElementById('file-input').files;
+      const m = document.getElementById('upload-msg');
 
-      if (!topic)         { showMsg(msg, "Please enter a topic name.", "error"); return; }
-      if (!files.length)  { showMsg(msg, "Please select at least one file.", "error"); return; }
+      if (!topic) { msg(m, 'Please enter a topic name.', 'error'); return; }
+      if (!files.length) { msg(m, 'Please select at least one file.', 'error'); return; }
 
       const fd = new FormData();
-      fd.append("topic", topic);
-      for (const f of files) fd.append("file", f);
+      fd.append('topic', topic);
+      for (const f of files) fd.append('file', f);
 
-      showMsg(msg, "Uploading…", "");
+      msg(m, 'Uploading…', '');
       try {
-        const res  = await fetch("/upload", { method: "POST", body: fd });
-        const text = await res.text();
-        if (res.ok) {
-          showMsg(msg, "✅ " + text, "success");
-          loadTopics();
-        } else {
-          showMsg(msg, "❌ " + text, "error");
-        }
+        const r = await fetch('/upload', { method: 'POST', body: fd });
+        const t = await r.text();
+        if (r.ok) { msg(m, '✅ ' + t, 'success'); loadTopics(); }
+        else       { msg(m, '❌ ' + t, 'error'); }
       } catch (e) {
-        showMsg(msg, "❌ Upload failed: " + e.message, "error");
+        msg(m, '❌ Upload failed: ' + e.message, 'error');
       }
     }
 
-    // ── Generate ─────────────────────────────────────────────
+    /* ── Generate ─────────────────────────────────────────── */
     async function generate() {
-      const topic  = document.getElementById("topic-select").value;
-      const output = document.getElementById("output-type").value;
-      const diff   = document.getElementById("difficulty").value;
-      const n      = parseInt(document.getElementById("num-questions").value) || 5;
-      const msg    = document.getElementById("gen-msg");
-      const loader = document.getElementById("loader");
+      const topic  = document.getElementById('topic-select').value;
+      const output = document.getElementById('output-type').value;
+      const diff   = document.getElementById('difficulty').value;
+      const n      = parseInt(document.getElementById('num-questions').value) || 5;
+      const m      = document.getElementById('gen-msg');
+      const loader = document.getElementById('loader');
 
-      if (!topic) { showMsg(msg, "Please select a topic.", "error"); return; }
+      if (!topic) { msg(m, 'Please select a topic.', 'error'); return; }
 
-      showMsg(msg, "", "");
-      loader.classList.add("visible");
-      document.getElementById("output-section").classList.remove("visible");
-      document.getElementById("download-btn").classList.remove("visible");
+      msg(m, '', '');
+      loader.classList.add('visible');
+      document.getElementById('output-section').classList.remove('visible');
+      document.getElementById('download-btn').classList.remove('visible');
+      document.getElementById('score-banner').classList.remove('visible');
+
+      qzTotal = qzAnswered = qzCorrect = 0;
 
       try {
-        const res  = await fetch("/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            topic,
-            output_type: output,
-            difficulty: diff,
-            number_of_questions: n
-          })
+        const r = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic, output_type: output, difficulty: diff, number_of_questions: n })
         });
 
-        const data = await res.json();
-        loader.classList.remove("visible");
+        const data = await r.json();
+        loader.classList.remove('visible');
 
-        if (!res.ok) {
-          showMsg(msg, "❌ " + (data.error || "Generation failed."), "error");
-          return;
-        }
+        if (!r.ok) { msg(m, '❌ ' + (data.error || 'Generation failed.'), 'error'); return; }
+        if (!Array.isArray(data) || !data.length) { msg(m, '❌ No output received. Try again.', 'error'); return; }
 
-        if (!Array.isArray(data) || data.length === 0) {
-          showMsg(msg, "❌ No output received. Try again.", "error");
-          return;
-        }
+        lastData  = data;
+        lastType  = output;
+        lastTopic = topic;
 
-        formatOutput(data, output, topic);
-        document.getElementById("output-section").classList.add("visible");
-        document.getElementById("download-btn").classList.add("visible");
-        document.getElementById("output-section").scrollIntoView({ behavior: "smooth" });
+        renderOutput(data, output, topic);
+        document.getElementById('output-section').classList.add('visible');
+        document.getElementById('download-btn').classList.add('visible');
+        document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
 
       } catch (e) {
-        loader.classList.remove("visible");
-        showMsg(msg, "❌ Error: " + e.message, "error");
+        loader.classList.remove('visible');
+        msg(m, '❌ Error: ' + e.message, 'error');
       }
     }
 
-    // ── Format Output ────────────────────────────────────────
-    function formatOutput(data, type, topic) {
-      const body  = document.getElementById("output-body");
-      const title = document.getElementById("output-title");
+    /* ── Render Router ────────────────────────────────────── */
+    function renderOutput(data, type, topic) {
+      const body   = document.getElementById('output-body');
+      const titleEl = document.getElementById('output-title');
+      const badge  = document.getElementById('output-badge');
 
-      const typeLabel = type === "quiz"
-        ? "Quiz (MCQ)"
-        : type === "flashcards"
-        ? "Flashcards"
-        : "Question Paper";
+      const labels = { quiz: 'Quiz (MCQ)', flashcards: 'Flashcards', 'question paper': 'Question Paper' };
+      const colors = { quiz: ['#5B5FEF','#EEEFFE'], flashcards: ['#7C3AED','#F3EEFF'], 'question paper': ['#0369A1','#E0F2FE'] };
 
-      title.textContent = `${typeLabel} — ${topic}`;
-      body.innerHTML = "";
+      titleEl.textContent = `${labels[type] || type} — ${topic}`;
+      const [c, bg] = colors[type] || colors.quiz;
+      badge.textContent = labels[type] || type;
+      badge.style.color      = c;
+      badge.style.background = bg;
 
-      if (type === "flashcards") {
-        data.forEach((item, i) => {
-          body.innerHTML += `
-            <div class="flash-block">
-              <div class="flash-q">Q${i + 1}. ${escHtml(item.question)}</div>
-              <div class="flash-a">💡 ${escHtml(item.answer)}</div>
+      body.innerHTML = '';
+
+      if (type === 'flashcards')       renderFlashcards(data, body);
+      else if (type === 'quiz')        renderQuiz(data, body);
+      else                             renderPaper(data, body);
+    }
+
+    /* ════════════════════════════════════════════════════════
+       QUIZ — Interactive MCQ
+    ════════════════════════════════════════════════════════ */
+    function renderQuiz(data, body) {
+      qzTotal = data.length; qzAnswered = 0; qzCorrect = 0;
+
+      /* Progress bar */
+      const pb = document.createElement('div');
+      pb.className = 'quiz-progress-bar';
+      pb.id = 'qz-progress';
+      pb.innerHTML = `
+        <span class="quiz-progress-text" id="qz-prog-text">0 / ${data.length} answered</span>
+        <div class="progress-track"><div class="progress-fill" id="qz-prog-fill"></div></div>`;
+      body.appendChild(pb);
+
+      data.forEach((item, qi) => {
+        const correct = correctLetter(item.answer);
+        const block = document.createElement('div');
+        block.className = 'q-block';
+        block.dataset.answered = '';
+
+        const optsHtml = (item.options || []).map((opt, idx) => {
+          const letter = String.fromCharCode(65 + idx);
+          return `
+            <div class="quiz-option"
+                 data-letter="${letter}"
+                 data-correct="${correct}"
+                 onclick="pickOption(this,${qi})">
+              <span class="opt-pill">${letter}</span>
+              <span class="opt-text">${esc(cleanOpt(opt))}</span>
+              <span class="opt-icon"></span>
             </div>`;
-        });
+        }).join('');
 
+        block.innerHTML = `
+          <div class="q-num">Question ${qi + 1} of ${data.length}</div>
+          <div class="q-text">${esc(item.question)}</div>
+          ${optsHtml}`;
+
+        body.appendChild(block);
+      });
+    }
+
+    function pickOption(el, qi) {
+      const block = el.closest('.q-block');
+      if (block.dataset.answered === 'true') return;
+      block.dataset.answered = 'true';
+
+      const chosen  = el.dataset.letter;
+      const correct = el.dataset.correct;
+      const allOpts = block.querySelectorAll('.quiz-option');
+
+      /* Lock all options immediately */
+      allOpts.forEach(o => { o.classList.add('locked'); o.onclick = null; });
+
+      if (chosen === correct) {
+        el.classList.add('correct');
+        el.querySelector('.opt-icon').textContent = '✓';
+        qzCorrect++;
       } else {
-        // quiz or question paper
-        data.forEach((item, i) => {
-          const opts   = item.options || [];
-          const correct = (item.answer || "").trim().toUpperCase();
-
-          const optLetters = ["A", "B", "C", "D"];
-          const optsHtml = opts.map((opt, idx) => {
-            const letter = optLetters[idx] || String.fromCharCode(65 + idx);
-            // Strip leading "A." / "A)" from option text if model included it
-            const cleanOpt = opt.replace(/^[A-D][.)]\s*/i, "");
-            const isCorrect = correct === letter ||
-                              correct === opt.trim().toUpperCase() ||
-                              correct.startsWith(letter + ".");
-            return `
-              <div class="option ${isCorrect ? "correct" : ""}">
-                <span class="opt-label">${letter}.</span>
-                <span>${escHtml(cleanOpt)}</span>
-                ${isCorrect ? '<span class="tick">✔</span>' : ""}
-              </div>`;
-          }).join("");
-
-          body.innerHTML += `
-            <div class="q-block">
-              <div class="q-text">Q${i + 1}. ${escHtml(item.question)}</div>
-              ${optsHtml}
-            </div>`;
+        el.classList.add('wrong');
+        el.querySelector('.opt-icon').textContent = '✗';
+        /* Highlight the correct option */
+        allOpts.forEach(o => {
+          if (o.dataset.letter === correct) {
+            o.classList.add('correct');
+            o.querySelector('.opt-icon').textContent = '✓';
+          }
         });
       }
+
+      qzAnswered++;
+
+      /* Update progress */
+      const pct = Math.round((qzAnswered / qzTotal) * 100);
+      const fill = document.getElementById('qz-prog-fill');
+      const text = document.getElementById('qz-prog-text');
+      if (fill) fill.style.width = pct + '%';
+      if (text) text.textContent = `${qzAnswered} / ${qzTotal} answered`;
+
+      /* Show score when done */
+      if (qzAnswered === qzTotal) showScore();
     }
 
-    // ── Download PDF ─────────────────────────────────────────
+    function showScore() {
+      const banner = document.getElementById('score-banner');
+      const pct    = Math.round((qzCorrect / qzTotal) * 100);
+      const emoji  = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '😅';
+      const sub    = pct >= 80 ? 'Excellent work! You nailed it.' : pct >= 50 ? 'Good effort! Keep practicing.' : 'Don\'t give up — try again!';
+      const cls    = pct >= 80 ? 'great' : pct >= 50 ? 'okay' : 'poor';
+
+      banner.className = `score-banner ${cls} visible`;
+      document.getElementById('score-emoji').textContent = emoji;
+      document.getElementById('score-big').textContent   = `${qzCorrect} / ${qzTotal} Correct — ${pct}%`;
+      document.getElementById('score-sub').textContent   = sub;
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       FLASHCARDS — Flip on click
+    ════════════════════════════════════════════════════════ */
+    function renderFlashcards(data, body) {
+      const hint = document.createElement('div');
+      hint.className = 'fc-hint';
+      hint.innerHTML = `<span>👆</span> Tap any card to reveal the answer`;
+      body.appendChild(hint);
+
+      data.forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = 'flashcard';
+
+        card.innerHTML = `
+          <div class="fc-front">
+            <div class="fc-num">Card ${i + 1} of ${data.length}</div>
+            <div class="fc-label">Question</div>
+            <div class="fc-content">${esc(item.question)}</div>
+            <span class="fc-tap-hint">tap to flip →</span>
+          </div>
+          <div class="fc-back">
+            <div class="fc-label">✦ Answer</div>
+            <div class="fc-content">${esc(item.answer)}</div>
+          </div>`;
+
+        card.addEventListener('click', () => card.classList.toggle('flipped'));
+        body.appendChild(card);
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       QUESTION PAPER — Static, no answers
+    ════════════════════════════════════════════════════════ */
+    function renderPaper(data, body) {
+      const info = document.createElement('div');
+      info.className = 'exam-info';
+      info.innerHTML = `📄 <strong>Exam Mode</strong> — Answers are hidden. Download as PDF for printing.`;
+      body.appendChild(info);
+
+      data.forEach((item, i) => {
+        const block = document.createElement('div');
+        block.className = 'q-block';
+
+        const optsHtml = (item.options || []).map((opt, idx) => {
+          const letter = String.fromCharCode(65 + idx);
+          return `
+            <div class="paper-option">
+              <span class="paper-opt-label">${letter}.</span>
+              <span class="paper-opt-text">${esc(cleanOpt(opt))}</span>
+            </div>`;
+        }).join('');
+
+        block.innerHTML = `
+          <div class="q-num">Question ${i + 1}</div>
+          <div class="q-text">${esc(item.question)}</div>
+          ${optsHtml}`;
+
+        body.appendChild(block);
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       PDF EXPORT — Clean formatted output
+    ════════════════════════════════════════════════════════ */
     function downloadPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const doc  = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pw   = doc.internal.pageSize.getWidth();
+      const ph   = doc.internal.pageSize.getHeight();
+      const ML   = 52;          // left margin
+      const MR   = 52;          // right margin
+      const maxW = pw - ML - MR;
+      const LH   = 15;          // base line height
+      let y      = 0;
 
-      const margin  = 50;
-      const maxW    = doc.internal.pageSize.getWidth() - margin * 2;
-      let y         = margin;
-      const lineH   = 16;
+      /* ── helpers ── */
+      function newPage() { doc.addPage(); y = 60; }
 
-      function checkPage(needed = lineH) {
-        if (y + needed > doc.internal.pageSize.getHeight() - margin) {
-          doc.addPage();
-          y = margin;
-        }
+      function checkY(need) { if (y + need > ph - 50) newPage(); }
+
+      function writeText(text, x, opts = {}) {
+        const lines = doc.splitTextToSize(text, opts.w || maxW);
+        checkY(lines.length * LH + (opts.pad || 0));
+        doc.text(lines, x, y);
+        y += lines.length * LH + (opts.gap || 4);
+        return lines.length;
       }
 
-      // Header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(92, 33, 182);
-      doc.text("JVR'S StudyAI", margin, y);
-      y += 26;
+      /* ── Cover header ── */
+      doc.setFillColor(14, 11, 46);
+      doc.rect(0, 0, pw, 72, 'F');
 
-      const titleEl = document.getElementById("output-title").textContent;
-      doc.setFontSize(12);
-      doc.setTextColor(80, 80, 80);
-      doc.text(titleEl, margin, y);
-      y += 24;
+      doc.setFillColor(91, 95, 239, 0.3);
+      doc.ellipse(pw - 60, 36, 120, 80, 'F');
 
-      doc.setDrawColor(200, 180, 255);
-      doc.line(margin, y, margin + maxW, y);
-      y += 18;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.text("JVR'S StudyAI", ML, 40);
 
-      // Content
-      const type = document.getElementById("output-type").value;
-      const blocks = type === "flashcards"
-        ? document.querySelectorAll(".flash-block")
-        : document.querySelectorAll(".q-block");
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(160, 165, 220);
+      const titleLabel = document.getElementById('output-title').textContent;
+      doc.text(titleLabel, ML, 58);
 
-      blocks.forEach((block, i) => {
-        checkPage(60);
+      y = 92;
 
-        if (type === "flashcards") {
-          const q = block.querySelector(".flash-q").textContent.trim();
-          const a = block.querySelector(".flash-a").textContent.trim();
+      /* ── Divider ── */
+      doc.setDrawColor(91, 95, 239);
+      doc.setLineWidth(1.5);
+      doc.line(ML, y, pw - MR, y);
+      y += 20;
 
-          doc.setFont("helvetica", "bold");
+      /* ── Meta line ── */
+      const now = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(150, 155, 180);
+      doc.text(`Generated: ${now}   ·   Topic: ${lastTopic}   ·   Mode: ${lastType}`, ML, y);
+      y += 22;
+
+      /* ══════════════════════════════════
+         FLASHCARDS PDF
+      ══════════════════════════════════ */
+      if (lastType === 'flashcards') {
+        lastData.forEach((item, i) => {
+          const qLines = doc.splitTextToSize(item.question, maxW - 16);
+          const aLines = doc.splitTextToSize(item.answer,   maxW - 20);
+          const qBoxH  = qLines.length * LH + 26;
+          const aBoxH  = aLines.length * LH + 26;
+
+          checkY(qBoxH + aBoxH + 20);
+
+          /* Question box */
+          doc.setFillColor(248, 249, 255);
+          doc.setDrawColor(228, 232, 240);
+          doc.setLineWidth(0.8);
+          doc.roundedRect(ML, y, maxW, qBoxH, 6, 6, 'FD');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(138, 147, 176);
+          doc.text(`CARD ${i + 1}  ·  QUESTION`, ML + 10, y + 13);
+
+          doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
-          doc.setTextColor(30, 30, 30);
-          const qLines = doc.splitTextToSize(q, maxW);
-          checkPage(qLines.length * lineH + 30);
-          doc.text(qLines, margin, y);
-          y += qLines.length * lineH + 6;
+          doc.setTextColor(15, 22, 48);
+          doc.text(qLines, ML + 10, y + 24);
+          y += qBoxH + 6;
 
-          doc.setFont("helvetica", "normal");
+          /* Answer box */
+          doc.setFillColor(238, 238, 254);
+          doc.setDrawColor(199, 210, 254);
+          doc.roundedRect(ML, y, maxW, aBoxH, 6, 6, 'FD');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(91, 95, 239);
+          doc.text('✦  ANSWER', ML + 10, y + 13);
+
+          doc.setFont('helvetica', 'normal');
           doc.setFontSize(10);
-          doc.setTextColor(4, 120, 87);
-          const aLines = doc.splitTextToSize(a, maxW - 14);
-          doc.setFillColor(209, 250, 229);
-          doc.roundedRect(margin, y - 12, maxW, aLines.length * lineH + 10, 4, 4, "F");
-          doc.text(aLines, margin + 8, y);
-          y += aLines.length * lineH + 18;
+          doc.setTextColor(55, 48, 163);
+          doc.text(aLines, ML + 10, y + 24);
+          y += aBoxH + 16;
+        });
 
-        } else {
-          const q = block.querySelector(".q-text").textContent.trim();
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(10);
-          doc.setTextColor(30, 30, 30);
-          const qLines = doc.splitTextToSize(q, maxW);
-          checkPage(qLines.length * lineH + 10);
-          doc.text(qLines, margin, y);
-          y += qLines.length * lineH + 6;
+      /* ══════════════════════════════════
+         QUIZ PDF — questions + highlighted correct answers
+      ══════════════════════════════════ */
+      } else if (lastType === 'quiz') {
+        lastData.forEach((item, i) => {
+          const correct  = correctLetter(item.answer);
+          const qLines   = doc.splitTextToSize(`Q${i + 1}.  ${item.question}`, maxW);
+          const optsEst  = (item.options || []).length * (LH + 8) + 10;
+          checkY(qLines.length * LH + optsEst + 14);
 
-          const opts = block.querySelectorAll(".option");
-          opts.forEach(opt => {
-            checkPage(lineH + 6);
-            const isCorrect = opt.classList.contains("correct");
-            const txt = opt.textContent.replace("✔", "").trim();
-            doc.setFont("helvetica", isCorrect ? "bold" : "normal");
-            doc.setFontSize(10);
-            doc.setTextColor(isCorrect ? 4 : 55, isCorrect ? 120 : 65, isCorrect ? 87 : 81);
+          /* Question text */
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(15, 22, 48);
+          doc.text(qLines, ML, y);
+          y += qLines.length * LH + 8;
+
+          /* Options */
+          (item.options || []).forEach((opt, idx) => {
+            const letter    = String.fromCharCode(65 + idx);
+            const isCorrect = letter === correct;
+            const oLines    = doc.splitTextToSize(`${letter}.  ${cleanOpt(opt)}`, maxW - 18);
+            const oBoxH     = oLines.length * LH + 7;
+
+            checkY(oBoxH + 6);
+
             if (isCorrect) {
-              doc.setFillColor(209, 250, 229);
-              doc.roundedRect(margin, y - 11, maxW, lineH + 2, 3, 3, "F");
+              doc.setFillColor(220, 252, 231);
+              doc.setDrawColor(134, 239, 172);
+              doc.setLineWidth(0.5);
+              doc.roundedRect(ML, y - 12, maxW, oBoxH + 4, 4, 4, 'FD');
             }
-            const oLines = doc.splitTextToSize((isCorrect ? "✔ " : "   ") + txt, maxW - 10);
-            doc.text(oLines, margin + 6, y);
-            y += oLines.length * lineH + 4;
+
+            doc.setFont('helvetica', isCorrect ? 'bold' : 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(
+              isCorrect ? 22  : 100,
+              isCorrect ? 163 : 110,
+              isCorrect ? 74  : 110
+            );
+            doc.text(oLines, ML + 10, y);
+            y += oLines.length * LH + 6;
           });
 
-          y += 10;
-        }
-      });
+          y += 12; /* gap between questions */
+        });
 
-      doc.save("JVR_StudyAI_Output.pdf");
+      /* ══════════════════════════════════
+         QUESTION PAPER PDF — no answers shown
+      ══════════════════════════════════ */
+      } else {
+        lastData.forEach((item, i) => {
+          const qLines  = doc.splitTextToSize(`Q${i + 1}.  ${item.question}`, maxW);
+          const optsEst = (item.options || []).length * (LH + 8) + 10;
+          checkY(qLines.length * LH + optsEst + 14);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10.5);
+          doc.setTextColor(15, 22, 48);
+          doc.text(qLines, ML, y);
+          y += qLines.length * LH + 8;
+
+          (item.options || []).forEach((opt, idx) => {
+            const letter = String.fromCharCode(65 + idx);
+            const oLines = doc.splitTextToSize(`${letter}.  ${cleanOpt(opt)}`, maxW - 14);
+            checkY(oLines.length * LH + 6);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(75, 85, 112);
+            doc.text(oLines, ML + 10, y);
+            y += oLines.length * LH + 6;
+          });
+
+          y += 14;
+        });
+
+        /* ── Answer Key (new page) ── */
+        newPage();
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(91, 95, 239);
+        doc.text('ANSWER KEY', ML, y);
+        y += 20;
+
+        doc.setDrawColor(91, 95, 239);
+        doc.setLineWidth(0.8);
+        doc.line(ML, y, pw - MR, y);
+        y += 16;
+
+        const cols  = 5;
+        const colW  = maxW / cols;
+
+        lastData.forEach((item, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const cx  = ML + col * colW;
+          const cy  = y + row * (LH + 6);
+
+          if (cy + LH > ph - 50) { /* overflow guard */ return; }
+
+          const correct = correctLetter(item.answer);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(10);
+          doc.setTextColor(30, 30, 60);
+          doc.text(`Q${i + 1}.  ${correct}`, cx, cy);
+        });
+
+        y += (Math.ceil(lastData.length / cols)) * (LH + 6) + 10;
+      }
+
+      /* ── Footer on every page ── */
+      const total = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(170, 175, 195);
+        doc.text(`JVR'S StudyAI  ·  Page ${p} of ${total}`, pw / 2, ph - 22, { align: 'center' });
+        doc.setDrawColor(220, 225, 240);
+        doc.setLineWidth(0.5);
+        doc.line(ML, ph - 32, pw - MR, ph - 32);
+      }
+
+      doc.save('JVR_StudyAI_Output.pdf');
     }
 
-    // ── Helpers ───────────────────────────────────────────────
-    function showMsg(el, text, type) {
-      el.textContent = text;
-      el.className = "msg " + type;
-    }
-
-    function escHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    // ── Init ─────────────────────────────────────────────────
+    /* ── Init ──────────────────────────────────────────────── */
     loadTopics();
   </script>
 </body>
