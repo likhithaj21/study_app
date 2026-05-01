@@ -175,7 +175,7 @@ Return ONLY valid JSON:
 ]
 """
 
-    elif output == "question paper":
+elif output == "question paper":
     format_block = f"""
 Return ONLY valid JSON:
 [
