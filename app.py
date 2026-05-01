@@ -1,22 +1,22 @@
 import os
 import json
 import sqlite3
-import fitz  # PyMuPDF
+import fitz
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from groq import Groq   # 🔥 NEW
+from groq import Groq
 
 app = Flask(__name__, static_folder=".")
 CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-DB_PATH = "notes.db"
+# 🔥 NEW DB NAME (forces reset on Render)
+DB_PATH = "notes_v2.db"
 
-# 🔥 GROQ CLIENT
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# ─── Database ────────────────────────────────────────────────────────────────
+# ─── DATABASE ─────────────────────────────────────
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -34,28 +34,28 @@ def init_db():
         """)
         conn.commit()
 
-# ─── Text Extraction ─────────────────────────────────────────────────────────
+# ─── TEXT EXTRACTION ──────────────────────────────
 
-def extract_text(file_storage):
-    filename = file_storage.filename.lower()
+def extract_text(file):
+    name = file.filename.lower()
 
-    if filename.endswith(".pdf"):
-        data = file_storage.read()
+    if name.endswith(".pdf"):
+        data = file.read()
         doc = fitz.open(stream=data, filetype="pdf")
-        return "\n".join(page.get_text() for page in doc).strip()
+        return "\n".join(page.get_text() for page in doc)
 
-    elif filename.endswith(".txt"):
-        return file_storage.read().decode("utf-8", errors="ignore").strip()
+    elif name.endswith(".txt"):
+        return file.read().decode("utf-8", errors="ignore")
 
     else:
-        raise ValueError("Only PDF and TXT files are supported.")
+        raise ValueError("Only PDF and TXT supported")
 
-# ─── Chunking ────────────────────────────────────────────────────────────────
+# ─── CHUNKING ─────────────────────────────────────
 
-def split_text(text, chunk_size=1500):
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+def split_text(text, size=1500):
+    return [text[i:i+size] for i in range(0, len(text), size)]
 
-# ─── Smart Retrieval (RAG) ───────────────────────────────────────────────────
+# ─── SMART SEARCH ─────────────────────────────────
 
 def search_relevant_chunks(topic, query, limit=5):
     with get_db() as conn:
@@ -68,39 +68,45 @@ def search_relevant_chunks(topic, query, limit=5):
 
     for r in rows:
         content = r["content"]
-        score = content.lower().count(query.lower())
+        score = (
+            content.lower().count(query.lower()) +
+            content.lower().count(topic.lower())
+        )
         scored.append((score, content))
 
     scored.sort(reverse=True, key=lambda x: x[0])
-
     return [c for _, c in scored[:limit]]
 
-# ─── Routes ──────────────────────────────────────────────────────────────────
+# ─── ROUTES ───────────────────────────────────────
 
 @app.route("/")
 def index():
     return send_from_directory(".", "index.html")
 
-# 🔥 MULTI-FILE UPLOAD + CHUNKING
+# 🔥 UPLOAD (OVERWRITE SAME TOPIC)
 @app.route("/upload", methods=["POST"])
 def upload_notes():
     topic = request.form.get("topic", "").strip()
     files = request.files.getlist("file")
 
     if not topic:
-        return "Topic name is required.", 400
-    if not files or files[0].filename == "":
-        return "At least one file is required.", 400
+        return "Topic required", 400
+    if not files:
+        return "No files", 400
 
     try:
         with get_db() as conn:
-            for file in files:
-                content = extract_text(file)
 
-                if len(content) < 20:
+            # 🔥 DELETE OLD TOPIC (FIX)
+            conn.execute("DELETE FROM notes WHERE topic=?", (topic,))
+
+            for file in files:
+                text = extract_text(file)
+
+                if len(text) < 20:
                     continue
 
-                chunks = split_text(content)
+                chunks = split_text(text)
 
                 for chunk in chunks:
                     conn.execute(
@@ -113,106 +119,83 @@ def upload_notes():
     except Exception as e:
         return f"Upload error: {e}", 500
 
-    return f"Uploaded {len(files)} file(s) successfully for topic '{topic}'"
+    return f"Uploaded successfully for topic '{topic}'"
 
 # GET TOPICS
-@app.route("/topics", methods=["GET"])
-def get_topics():
+@app.route("/topics")
+def topics():
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT DISTINCT topic FROM notes ORDER BY topic ASC"
+            "SELECT DISTINCT topic FROM notes ORDER BY topic"
         ).fetchall()
 
-    return jsonify([{"topic": r["topic"]} for r in rows])
+    return jsonify([r["topic"] for r in rows])
 
-# GET NOTES
-@app.route("/get_notes", methods=["GET"])
-def get_notes():
-    topic = request.args.get("topic", "").strip()
+# 🔥 GENERATE
+@app.route("/generate", methods=["POST"])
+def generate():
+    data = request.get_json()
+
+    topic = data.get("topic")
+    output = data.get("output_type", "quiz")
+    difficulty = data.get("difficulty", "medium")
+    n = data.get("number_of_questions", 5)
 
     if not topic:
         return jsonify({"error": "topic required"}), 400
 
-    with get_db() as conn:
-        rows = conn.execute(
-            "SELECT content FROM notes WHERE topic=?",
-            (topic,)
-        ).fetchall()
+    chunks = search_relevant_chunks(topic, output)
 
-    if not rows:
-        return jsonify({"error": "No notes found"}), 404
+    if not chunks:
+        return jsonify({"error": "no notes"}), 404
 
-    combined = "\n\n".join([r["content"] for r in rows])
-
-    return jsonify({
-        "topic": topic,
-        "content": combined,
-        "chars": len(combined)
-    })
-
-# 🔥 GROQ GENERATE
-@app.route("/generate", methods=["POST"])
-def generate():
-    body = request.get_json(force=True)
-
-    topic          = (body.get("topic") or "").strip()
-    output_type    = (body.get("output_type") or "quiz").strip()
-    difficulty     = (body.get("difficulty") or "medium").strip()
-    num_questions  = int(body.get("number_of_questions") or 5)
-
-    if not topic:
-        return jsonify({"error": "Topic required"}), 400
-
-    query = output_type + " " + topic
-    relevant_chunks = search_relevant_chunks(topic, query)
-
-    if not relevant_chunks:
-        return jsonify({"error": "No relevant notes found"}), 404
-
-    notes = "\n\n".join(relevant_chunks)
+    notes = "\n\n".join(chunks)
 
     prompt = f"""
-Use ONLY the notes below.
+You are an expert teacher.
+
+STRICT RULES:
+- Use ONLY the provided notes
+- Do NOT add outside knowledge
+- Be clear and exam-oriented
 
 NOTES:
 {notes}
 
-Generate {output_type} with {num_questions} questions.
+TASK:
+Generate {n} {output} questions
 Difficulty: {difficulty}
 
-Return ONLY JSON.
+Return JSON format:
+[
+  {{
+    "question": "...",
+    "options": ["A","B","C","D"],
+    "answer": "A"
+  }}
+]
 """
 
     try:
-        response = client.chat.completions.create(
+        res = client.chat.completions.create(
             model="llama3-8b-8192",
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+            messages=[{"role": "user", "content": prompt}]
         )
 
-        raw = response.choices[0].message.content
+        raw = res.choices[0].message.content
 
     except Exception as e:
-        return jsonify({"error": f"GROQ error: {e}"}), 500
+        return jsonify({"error": str(e)}), 500
 
     try:
         parsed = json.loads(raw)
     except:
-        parsed = {"raw_text": raw}
+        parsed = {"raw": raw}
 
-    return jsonify({
-        "success": True,
-        "topic": topic,
-        "result": parsed,
-        "raw": raw
-    })
+    return jsonify(parsed)
 
-# ─── Entry Point ─────────────────────────────────────────────────────────────
+# ─── RUN ──────────────────────────────────────────
 
 if __name__ == "__main__":
     init_db()
-    app.run(
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000))
-    )
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
