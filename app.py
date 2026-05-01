@@ -176,10 +176,17 @@ def generate():
         format_block = """
 [
   {
-    "question": "string",
-    "answer": "string"
+    "question": "What is fertilisation?",
+    "answer": "Fusion of male and female gametes to form a zygote."
   }
 ]
+
+FLASHCARD-SPECIFIC RULES (NON-NEGOTIABLE):
+- The "answer" field MUST be a full descriptive sentence or explanation.
+- DO NOT return "A", "B", "C", "D" or any single letter as the answer.
+- DO NOT include an "options" array — flashcards have NO options.
+- Each answer must be at least 10 words long and explain the concept clearly.
+- Imagine you are writing the back of a study card — write the complete answer.
 """
 
     elif output == "question paper":
@@ -197,11 +204,18 @@ def generate():
         return jsonify({"error": "Invalid output type"}), 400
 
     # 🔥 PROMPT
-    prompt = f"""IMPORTANT: Output ONLY a valid JSON array. No explanation. No markdown.
-
-You are an expert teacher.
-
-STRICT RULES:
+    if output == "flashcards":
+        strict_rules = f"""STRICT RULES:
+- Use ONLY the provided notes
+- Do NOT use outside knowledge
+- Output ONLY raw JSON
+- Generate exactly {n} flashcards
+- Difficulty: {difficulty}
+- CRITICAL: Answer field must be a full written explanation — NEVER a single letter like A/B/C/D
+- CRITICAL: Do NOT include an options array
+- Each answer must be a complete sentence of at least 10 words"""
+    else:
+        strict_rules = f"""STRICT RULES:
 - Use ONLY the provided notes
 - Do NOT use outside knowledge
 - Output ONLY raw JSON
@@ -209,7 +223,13 @@ STRICT RULES:
 - Answer must be ONLY A/B/C/D
 - Generate exactly {n} questions
 - Difficulty: {difficulty}
-- Type: {output}
+- Type: {output}"""
+
+    prompt = f"""IMPORTANT: Output ONLY a valid JSON array. No explanation. No markdown.
+
+You are an expert teacher.
+
+{strict_rules}
 
 NOTES:
 {notes}

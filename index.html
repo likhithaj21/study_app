@@ -669,61 +669,107 @@ function showScore(){
 }
 
 /* ─── FLASHCARDS — TRUE 3D FLIP ─────────────────────── */
-function renderFlashcards(data,body){
-  const hint=document.createElement('div');
-  hint.className='fc-hint';
-  hint.innerHTML='<span>👆</span> Tap any card to reveal the answer — click again to flip back';
+/* ─── FLASHCARD ANSWER VALIDATOR ────────────────────────
+   Returns true if the answer is a real descriptive text.
+   Rejects: single letters (A/B/C/D), blank, < 5 chars.
+──────────────────────────────────────────────────────── */
+function isValidFlashcardAnswer(ans){
+  if(!ans) return false;
+  const trimmed = String(ans).trim();
+  if(trimmed.length < 5) return false;
+  // Single letter optionally followed by period/colon
+  if(/^[A-Da-d][.):]?\s*$/.test(trimmed)) return false;
+  // "Answer: B" or "The answer is C" patterns
+  if(/^(the\s+)?answer\s*(is|:)\s*[A-Da-d][.):]?\s*$/i.test(trimmed)) return false;
+  return true;
+}
+
+function renderFlashcards(data, body){
+  // Filter out items with invalid answers before rendering
+  const valid = data.filter(item =>
+    item.question && isValidFlashcardAnswer(item.answer)
+  );
+  const invalid = data.length - valid.length;
+
+  const hint = document.createElement('div');
+  hint.className = 'fc-hint';
+  hint.innerHTML = '<span>👆</span> Tap any card to reveal the answer — click again to flip back';
   body.appendChild(hint);
 
-  data.forEach((item,i)=>{
-    const wrapper=document.createElement('div');
-    wrapper.className='fc-scene-wrapper';
+  if(invalid > 0){
+    const warn = document.createElement('div');
+    warn.style.cssText = 'font-size:0.78rem;color:#D97706;background:#FEF3C7;border:1px solid #FCD34D;border-radius:9px;padding:8px 14px;margin-bottom:14px;font-weight:500;';
+    warn.textContent = `${invalid} card${invalid>1?'s':''} skipped — answer was not generated correctly. Try regenerating.`;
+    body.appendChild(warn);
+  }
 
-    // We need a sizer div to set height since faces are absolute
-    const sizer=document.createElement('div');
-    sizer.className='fc-face-sizer';
-    sizer.innerHTML=`<div class="fc-num">Card ${i+1} of ${data.length}</div>
-      <div class="fc-label">Question</div>
-      <div class="fc-content">${esc(item.question)}</div>`;
+  if(!valid.length){
+    const err = document.createElement('div');
+    err.style.cssText = 'text-align:center;padding:32px 16px;color:#DC2626;font-weight:600;font-size:0.9rem;';
+    err.textContent = 'No valid flashcards could be rendered. Please regenerate.';
+    body.appendChild(err);
+    return;
+  }
 
-    const scene=document.createElement('div');
-    scene.className='flashcard-scene';
+  valid.forEach((item, i) => {
+    // Sanitise answer — strip any leading "Answer:" prefix if AI included it
+    const rawAnswer = String(item.answer).trim().replace(/^answer\s*:\s*/i, '');
+    const displayAnswer = isValidFlashcardAnswer(rawAnswer)
+      ? rawAnswer
+      : 'Answer not generated correctly. Please regenerate.';
 
-    // Dynamically set min-height after DOM insert
-    const inner=document.createElement('div');
-    inner.className='flashcard-inner';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'fc-scene-wrapper';
 
-    const front=document.createElement('div');
-    front.className='fc-face fc-front-face';
-    front.innerHTML=`<div class="fc-num">Card ${i+1} of ${data.length}</div>
-      <div class="fc-label">Question</div>
+    // Sizer: invisible div used to measure natural content height
+    const sizer = document.createElement('div');
+    sizer.className = 'fc-face-sizer';
+    sizer.innerHTML = `
+      <div class="fc-num">Card ${i+1} of ${valid.length}</div>
+      <div class="fc-label">Q:</div>
       <div class="fc-content">${esc(item.question)}</div>
-      <span class="fc-tap-hint">tap to flip</span>`;
+      <div class="fc-label" style="margin-top:12px">Answer:</div>
+      <div class="fc-content">${esc(displayAnswer)}</div>`;
 
-    const back=document.createElement('div');
-    back.className='fc-face fc-back-face';
-    back.innerHTML=`<div class="fc-label">Answer</div>
-      <div class="fc-content">${esc(item.answer)}</div>
+    const scene = document.createElement('div');
+    scene.className = 'flashcard-scene';
+
+    const inner = document.createElement('div');
+    inner.className = 'flashcard-inner';
+
+    // FRONT — question only
+    const front = document.createElement('div');
+    front.className = 'fc-face fc-front-face';
+    front.innerHTML = `
+      <div class="fc-num">Card ${i+1} of ${valid.length}</div>
+      <div class="fc-label">Q:</div>
+      <div class="fc-content">${esc(item.question)}</div>
+      <span class="fc-tap-hint">tap to reveal answer</span>`;
+
+    // BACK — full answer text, never option letters
+    const back = document.createElement('div');
+    back.className = 'fc-face fc-back-face';
+    back.innerHTML = `
+      <div class="fc-label">Answer:</div>
+      <div class="fc-content">${esc(displayAnswer)}</div>
       <span class="fc-tap-hint">tap to flip back</span>`;
 
     inner.appendChild(front);
     inner.appendChild(back);
     scene.appendChild(inner);
 
-    scene.addEventListener('click',()=>{
-      scene.classList.toggle('flipped');
-    });
+    scene.addEventListener('click', () => scene.classList.toggle('flipped'));
 
     wrapper.appendChild(sizer);
     wrapper.appendChild(scene);
     body.appendChild(wrapper);
 
-    // After mounting, sync height
-    requestAnimationFrame(()=>{
-      const h=Math.max(sizer.offsetHeight, 160);
-      inner.style.height=h+'px';
-      scene.style.height=h+'px';
-      sizer.style.display='none';
+    // Sync card height to the taller of front/back content
+    requestAnimationFrame(() => {
+      const h = Math.max(sizer.offsetHeight, 160);
+      inner.style.height = h + 'px';
+      scene.style.height = h + 'px';
+      sizer.style.display = 'none';
     });
   });
 }
