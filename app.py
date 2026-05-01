@@ -6,16 +6,20 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from groq import Groq
 
-app = Flask(__name__, static_folder=".")
+# ── Serve index.html from "static" subfolder ──────────────
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR  = os.path.join(BASE_DIR, "static")
+
+app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="/static")
 CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-DB_PATH = "notes_v2.db"
+DB_PATH = os.path.join(BASE_DIR, "notes_v2.db")
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# ─── DATABASE ─────────────────────────────────────
+# ─── DATABASE ─────────────────────────────────────────────
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -33,38 +37,33 @@ def init_db():
         """)
         conn.commit()
 
-# ─── TEXT EXTRACTION ──────────────────────────────
+# ─── TEXT EXTRACTION ──────────────────────────────────────
 
 def extract_text(file):
     name = file.filename.lower()
-
     if name.endswith(".pdf"):
         data = file.read()
         doc = fitz.open(stream=data, filetype="pdf")
         return "\n".join(page.get_text() for page in doc)
-
     elif name.endswith(".txt"):
         return file.read().decode("utf-8", errors="ignore")
-
     else:
         raise ValueError("Only PDF and TXT supported")
 
-# ─── CHUNKING ─────────────────────────────────────
+# ─── CHUNKING ─────────────────────────────────────────────
 
 def split_text(text, size=1500):
     return [text[i:i+size] for i in range(0, len(text), size)]
 
-# ─── SMART SEARCH ─────────────────────────────────
+# ─── SMART SEARCH ─────────────────────────────────────────
 
 def search_relevant_chunks(topic, query, limit=5):
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT content FROM notes WHERE topic=?",
-            (topic,)
+            "SELECT content FROM notes WHERE topic=?", (topic,)
         ).fetchall()
 
     scored = []
-
     for r in rows:
         content = r["content"]
         score = (
@@ -76,13 +75,13 @@ def search_relevant_chunks(topic, query, limit=5):
     scored.sort(reverse=True, key=lambda x: x[0])
     return [c for _, c in scored[:limit]]
 
-# ─── ROUTES ───────────────────────────────────────
+# ─── ROUTES ───────────────────────────────────────────────
 
 @app.route("/")
 def index():
-    return send_from_directory(".", "index.html")
+    return send_from_directory(STATIC_DIR, "index.html")
 
-# UPLOAD (OVERWRITE SAME TOPIC)
+# UPLOAD
 @app.route("/upload", methods=["POST"])
 def upload_notes():
     topic = request.form.get("topic", "").strip()
@@ -96,23 +95,16 @@ def upload_notes():
     try:
         with get_db() as conn:
             conn.execute("DELETE FROM notes WHERE topic=?", (topic,))
-
             for file in files:
                 text = extract_text(file)
-
                 if len(text) < 20:
                     continue
-
-                chunks = split_text(text)
-
-                for chunk in chunks:
+                for chunk in split_text(text):
                     conn.execute(
                         "INSERT INTO notes (topic, content) VALUES (?, ?)",
                         (topic, chunk)
                     )
-
             conn.commit()
-
     except Exception as e:
         return f"Upload error: {e}", 500
 
@@ -125,24 +117,21 @@ def topics():
         rows = conn.execute(
             "SELECT DISTINCT topic FROM notes ORDER BY topic"
         ).fetchall()
-
     return jsonify([r["topic"] for r in rows])
 
 # GENERATE
 @app.route("/generate", methods=["POST"])
 def generate():
-    data = request.get_json()
-
-    topic = data.get("topic")
-    output = data.get("output_type", "quiz")
+    data       = request.get_json()
+    topic      = data.get("topic")
+    output     = data.get("output_type", "quiz")
     difficulty = data.get("difficulty", "medium")
-    n = data.get("number_of_questions", 5)
+    n          = data.get("number_of_questions", 5)
 
     if not topic:
         return jsonify({"error": "topic required"}), 400
 
     chunks = search_relevant_chunks(topic, output)
-
     if not chunks:
         return jsonify({"error": "no notes"}), 404
 
@@ -158,7 +147,6 @@ def generate():
   }
 ]
 """
-
     elif output == "flashcards":
         format_block = """
 [
@@ -168,7 +156,6 @@ def generate():
   }
 ]
 """
-
     elif output == "question paper":
         format_block = f"""
 [
@@ -179,7 +166,6 @@ def generate():
   }}
 ]
 """
-
     else:
         return jsonify({"error": "Invalid output type"}), 400
 
@@ -212,13 +198,11 @@ Remember: Start your response with [ and end with ]. Nothing else."""
             temperature=0.2
         )
         raw = res.choices[0].message.content.strip()
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    # ─── ROBUST JSON EXTRACTION ───────────────────
+    # ── Robust JSON extraction ─────────────────────────────
     try:
-        # Remove markdown code fences if present
         if "```" in raw:
             parts = raw.split("```")
             for part in parts:
@@ -231,7 +215,6 @@ Remember: Start your response with [ and end with ]. Nothing else."""
 
         raw = raw.strip()
 
-        # Find outermost JSON array or object
         if "[" in raw:
             start = raw.index("[")
             end   = raw.rindex("]") + 1
@@ -256,7 +239,7 @@ Remember: Start your response with [ and end with ]. Nothing else."""
 
     return jsonify(parsed)
 
-# ─── RUN ──────────────────────────────────────────
+# ─── RUN ──────────────────────────────────────────────────
 
 if __name__ == "__main__":
     init_db()
