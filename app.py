@@ -35,16 +35,23 @@ def init_db():
         """)
         conn.commit()
 
+# 🔥 AUTO INIT FOR RENDER / GUNICORN
+with app.app_context():
+    init_db()
+
 # ─── TEXT EXTRACTION ──────────────────────────────────────
 
 def extract_text(file):
     name = file.filename.lower()
+
     if name.endswith(".pdf"):
         data = file.read()
         doc = fitz.open(stream=data, filetype="pdf")
         return "\n".join(page.get_text() for page in doc)
+
     elif name.endswith(".txt"):
         return file.read().decode("utf-8", errors="ignore")
+
     else:
         raise ValueError("Only PDF and TXT supported")
 
@@ -60,7 +67,9 @@ def search_relevant_chunks(topic, query, limit=5):
         rows = conn.execute(
             "SELECT content FROM notes WHERE topic=?", (topic,)
         ).fetchall()
+
     scored = []
+
     for r in rows:
         content = r["content"]
         score = (
@@ -68,15 +77,18 @@ def search_relevant_chunks(topic, query, limit=5):
             content.lower().count(topic.lower())
         )
         scored.append((score, content))
+
     scored.sort(reverse=True, key=lambda x: x[0])
+
     return [c for _, c in scored[:limit]]
 
 # ─── ROUTES ───────────────────────────────────────────────
 
 @app.route("/")
 def index():
-    # Serve index.html from same directory as app.py
     return send_from_directory(BASE_DIR, "index.html")
+
+# ─── UPLOAD ───────────────────────────────────────────────
 
 @app.route("/upload", methods=["POST"])
 def upload_notes():
@@ -85,26 +97,38 @@ def upload_notes():
 
     if not topic:
         return "Topic required", 400
+
     if not files:
         return "No files", 400
 
     try:
         with get_db() as conn:
+
+            # overwrite existing topic
             conn.execute("DELETE FROM notes WHERE topic=?", (topic,))
+
             for file in files:
                 text = extract_text(file)
+
                 if len(text) < 20:
                     continue
-                for chunk in split_text(text):
+
+                chunks = split_text(text)
+
+                for chunk in chunks:
                     conn.execute(
                         "INSERT INTO notes (topic, content) VALUES (?, ?)",
                         (topic, chunk)
                     )
+
             conn.commit()
+
     except Exception as e:
         return f"Upload error: {e}", 500
 
     return f"Uploaded successfully for topic '{topic}'"
+
+# ─── GET TOPICS ───────────────────────────────────────────
 
 @app.route("/topics")
 def topics():
@@ -112,25 +136,31 @@ def topics():
         rows = conn.execute(
             "SELECT DISTINCT topic FROM notes ORDER BY topic"
         ).fetchall()
+
     return jsonify([r["topic"] for r in rows])
+
+# ─── GENERATE ─────────────────────────────────────────────
 
 @app.route("/generate", methods=["POST"])
 def generate():
-    data       = request.get_json()
-    topic      = data.get("topic")
-    output     = data.get("output_type", "quiz")
+    data = request.get_json()
+
+    topic = data.get("topic")
+    output = data.get("output_type", "quiz")
     difficulty = data.get("difficulty", "medium")
-    n          = data.get("number_of_questions", 5)
+    n = data.get("number_of_questions", 5)
 
     if not topic:
         return jsonify({"error": "topic required"}), 400
 
     chunks = search_relevant_chunks(topic, output)
+
     if not chunks:
         return jsonify({"error": "no notes"}), 404
 
     notes = "\n\n".join(chunks)
 
+    # 🔥 FORMAT BLOCKS
     if output == "quiz":
         format_block = """
 [
@@ -141,6 +171,7 @@ def generate():
   }
 ]
 """
+
     elif output == "flashcards":
         format_block = """
 [
@@ -150,6 +181,7 @@ def generate():
   }
 ]
 """
+
     elif output == "question paper":
         format_block = f"""
 [
@@ -160,30 +192,31 @@ def generate():
   }}
 ]
 """
+
     else:
         return jsonify({"error": "Invalid output type"}), 400
 
-    prompt = f"""IMPORTANT: Output ONLY a valid JSON array. No explanation. No markdown. No extra text before or after. Start directly with [ and end with ].
+    # 🔥 PROMPT
+    prompt = f"""IMPORTANT: Output ONLY a valid JSON array. No explanation. No markdown.
 
-You are an expert teacher creating study material from the notes below.
+You are an expert teacher.
 
 STRICT RULES:
 - Use ONLY the provided notes
 - Do NOT use outside knowledge
-- Output ONLY a raw JSON array — no markdown, no code fences, no explanation
-- The answer field must be ONLY the letter: A, B, C, or D
-- Each question must have exactly 4 options as plain text (no letter prefix in options)
-- Generate exactly {n} items
+- Output ONLY raw JSON
+- Each question must have 4 options
+- Answer must be ONLY A/B/C/D
+- Generate exactly {n} questions
 - Difficulty: {difficulty}
 - Type: {output}
 
 NOTES:
 {notes}
 
-REQUIRED JSON FORMAT:
+FORMAT:
 {format_block}
-
-Remember: Start your response with [ and end with ]. Nothing else."""
+"""
 
     try:
         res = client.chat.completions.create(
@@ -191,10 +224,13 @@ Remember: Start your response with [ and end with ]. Nothing else."""
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2
         )
+
         raw = res.choices[0].message.content.strip()
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    # 🔥 CLEAN JSON
     try:
         if "```" in raw:
             parts = raw.split("```")
@@ -206,18 +242,17 @@ Remember: Start your response with [ and end with ]. Nothing else."""
                     raw = part
                     break
 
-        raw = raw.strip()
-
         if "[" in raw:
             start = raw.index("[")
-            end   = raw.rindex("]") + 1
+            end = raw.rindex("]") + 1
         elif "{" in raw:
             start = raw.index("{")
-            end   = raw.rindex("}") + 1
+            end = raw.rindex("}") + 1
         else:
-            raise ValueError("No JSON found in response")
+            raise ValueError("No JSON found")
 
         clean_json = raw[start:end]
+
         parsed = json.loads(clean_json)
 
         if not isinstance(parsed, list):
@@ -231,9 +266,3 @@ Remember: Start your response with [ and end with ]. Nothing else."""
         }), 500
 
     return jsonify(parsed)
-
-# ─── RUN ──────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    init_db()
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
