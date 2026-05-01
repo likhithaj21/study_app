@@ -11,7 +11,6 @@ CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-# 🔥 NEW DB NAME (forces reset on Render)
 DB_PATH = "notes_v2.db"
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -83,7 +82,7 @@ def search_relevant_chunks(topic, query, limit=5):
 def index():
     return send_from_directory(".", "index.html")
 
-# 🔥 UPLOAD (OVERWRITE SAME TOPIC)
+# UPLOAD (OVERWRITE SAME TOPIC)
 @app.route("/upload", methods=["POST"])
 def upload_notes():
     topic = request.form.get("topic", "").strip()
@@ -96,8 +95,6 @@ def upload_notes():
 
     try:
         with get_db() as conn:
-
-            # 🔥 DELETE OLD TOPIC (FIX)
             conn.execute("DELETE FROM notes WHERE topic=?", (topic,))
 
             for file in files:
@@ -131,7 +128,7 @@ def topics():
 
     return jsonify([r["topic"] for r in rows])
 
-# 🔥 GENERATE
+# GENERATE
 @app.route("/generate", methods=["POST"])
 def generate():
     data = request.get_json()
@@ -151,7 +148,6 @@ def generate():
 
     notes = "\n\n".join(chunks)
 
-    # 🔥 FORMAT BASED ON OUTPUT TYPE
     if output == "quiz":
         format_block = """
 Return ONLY valid JSON:
@@ -175,8 +171,8 @@ Return ONLY valid JSON:
 ]
 """
 
-elif output == "question paper":
-    format_block = f"""
+    elif output == "question paper":
+        format_block = f"""
 Return ONLY valid JSON:
 [
   {{
@@ -192,12 +188,10 @@ Rules:
 - Only one correct answer
 - Cover different parts of the topic
 """
-"""
 
     else:
         return jsonify({"error": "Invalid output type"}), 400
 
-    # 🧠 PROMPT
     prompt = f"""
 You are an expert teacher.
 
@@ -216,7 +210,7 @@ Type: {output}
 Difficulty: {difficulty}
 
 {format_block}
-
+"""
 
     try:
         res = client.chat.completions.create(
@@ -224,20 +218,17 @@ Difficulty: {difficulty}
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3
         )
-
         raw = res.choices[0].message.content.strip()
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    # 🔥 CLEAN JSON EXTRACTION
     try:
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
                 raw = raw[4:]
 
-        # detect object or array
         start = raw.find("{") if "{" in raw else raw.find("[")
         end = raw.rfind("}") + 1 if "}" in raw else raw.rfind("]") + 1
         if start == -1 or end == 0:
