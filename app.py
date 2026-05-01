@@ -6,11 +6,9 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from groq import Groq
 
-# ── Serve index.html from "static" subfolder ──────────────
-BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR  = os.path.join(BASE_DIR, "static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="/static")
+app = Flask(__name__)
 CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
@@ -62,7 +60,6 @@ def search_relevant_chunks(topic, query, limit=5):
         rows = conn.execute(
             "SELECT content FROM notes WHERE topic=?", (topic,)
         ).fetchall()
-
     scored = []
     for r in rows:
         content = r["content"]
@@ -71,7 +68,6 @@ def search_relevant_chunks(topic, query, limit=5):
             content.lower().count(topic.lower())
         )
         scored.append((score, content))
-
     scored.sort(reverse=True, key=lambda x: x[0])
     return [c for _, c in scored[:limit]]
 
@@ -79,9 +75,9 @@ def search_relevant_chunks(topic, query, limit=5):
 
 @app.route("/")
 def index():
-    return send_from_directory(STATIC_DIR, "index.html")
+    # Serve index.html from same directory as app.py
+    return send_from_directory(BASE_DIR, "index.html")
 
-# UPLOAD
 @app.route("/upload", methods=["POST"])
 def upload_notes():
     topic = request.form.get("topic", "").strip()
@@ -110,7 +106,6 @@ def upload_notes():
 
     return f"Uploaded successfully for topic '{topic}'"
 
-# GET TOPICS
 @app.route("/topics")
 def topics():
     with get_db() as conn:
@@ -119,7 +114,6 @@ def topics():
         ).fetchall()
     return jsonify([r["topic"] for r in rows])
 
-# GENERATE
 @app.route("/generate", methods=["POST"])
 def generate():
     data       = request.get_json()
@@ -201,7 +195,6 @@ Remember: Start your response with [ and end with ]. Nothing else."""
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    # ── Robust JSON extraction ─────────────────────────────
     try:
         if "```" in raw:
             parts = raw.split("```")
