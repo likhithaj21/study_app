@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JVR'S StudyAI</title>
 
-<!-- ✅ PDF LIBRARY -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -44,9 +43,6 @@ input, select {
   border: 1px solid #ddd;
   font-size: 14px;
 }
-input[type="file"] {
-  border: none;
-}
 button {
   margin-top: 15px;
   padding: 12px;
@@ -56,28 +52,19 @@ button {
   border-radius: 10px;
   cursor: pointer;
   width: 100%;
-  font-size: 15px;
 }
 button:hover {
   background: #4338ca;
 }
-.alert {
-  margin-top: 10px;
-  font-size: 14px;
-}
-.alert-error {
-  color: #dc2626;
-}
-.alert-success {
-  color: #16a34a;
-}
 .result {
-  white-space: pre-wrap;
   background: #f9fafb;
   padding: 15px;
   border-radius: 10px;
   margin-top: 10px;
-  font-size: 14px;
+}
+.correct {
+  color: green;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -85,49 +72,35 @@ button:hover {
 <body>
 
 <div class="container">
-
 <h1>🧠 JVR'S StudyAI</h1>
 
-<!-- UPLOAD -->
 <div class="card">
-  <h3>Upload Notes</h3>
+<h3>Upload Notes</h3>
 
-  <label>Topic</label>
-  <input type="text" id="upload-topic" placeholder="e.g Biology, Physics">
+<input type="text" id="upload-topic" placeholder="Topic">
+<input type="file" id="file-input" multiple>
 
-  <label>Upload Files (PDF/TXT)</label>
-  <input type="file" id="file-input" multiple>
-
-  <button onclick="uploadNotes()">Upload Notes</button>
-
-  <div class="alert alert-success" id="upload-success"></div>
-  <div class="alert alert-error" id="upload-error"></div>
+<button onclick="uploadNotes()">Upload Notes</button>
+<p id="upload-msg"></p>
 </div>
 
-<!-- GENERATE -->
 <div class="card">
-  <h3>Generate Study Material</h3>
+<h3>Generate</h3>
 
-  <label>Select Topic</label>
-  <select id="gen-topic"></select>
+<select id="gen-topic"></select>
 
-  <label>Output Type</label>
-  <select id="output-type">
-    <option value="quiz">Quiz</option>
-    <option value="flashcards">Flashcards</option>
-    <option value="question paper">Question Paper</option>
-  </select>
+<select id="output-type">
+<option value="quiz">Quiz</option>
+<option value="flashcards">Flashcards</option>
+<option value="question paper">Question Paper</option>
+</select>
 
-  <button onclick="generate()">Generate</button>
+<button onclick="generate()">Generate</button>
+<button onclick="downloadPDF()" id="download-btn" style="display:none;">
+📄 Download PDF
+</button>
 
-  <!-- ✅ PDF BUTTON -->
-  <button onclick="downloadPDF()" id="download-btn" style="display:none;">
-    📄 Download PDF
-  </button>
-
-  <div class="alert alert-error" id="gen-error"></div>
-
-  <div id="result" class="result" style="display:none;"></div>
+<div id="result" class="result"></div>
 </div>
 
 </div>
@@ -149,7 +122,6 @@ async function loadTopics() {
     sel.appendChild(opt);
   });
 }
-
 window.onload = loadTopics;
 
 // UPLOAD
@@ -157,32 +129,18 @@ async function uploadNotes() {
   const topic = document.getElementById("upload-topic").value;
   const files = document.getElementById("file-input").files;
 
-  hide("upload-error");
-  hide("upload-success");
-
-  if (!topic) return show("upload-error","Enter topic");
-  if (!files.length) return show("upload-error","Select files");
-
-  const fd = new FormData();
+  let fd = new FormData();
   fd.append("topic", topic);
 
   for (let f of files) {
     fd.append("file", f);
   }
 
-  try {
-    const res = await fetch("/upload", {
-      method: "POST",
-      body: fd
-    });
+  let res = await fetch("/upload", {method:"POST", body:fd});
+  let text = await res.text();
 
-    const text = await res.text();
-    show("upload-success", text);
-    loadTopics();
-
-  } catch {
-    show("upload-error","Upload failed");
-  }
+  document.getElementById("upload-msg").textContent = text;
+  loadTopics();
 }
 
 // GENERATE
@@ -190,66 +148,70 @@ async function generate() {
   const topic = document.getElementById("gen-topic").value;
   const type = document.getElementById("output-type").value;
 
-  hide("gen-error");
+  let res = await fetch("/generate", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      topic: topic,
+      output_type: type,
+      number_of_questions: 5
+    })
+  });
 
-  if (!topic) return show("gen-error","Select topic");
+  let data = await res.json();
 
-  try {
-    const res = await fetch("/generate", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        topic: topic,
-        output_type: type,
-        difficulty: "medium",
-        number_of_questions: 5
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.error) return show("gen-error", data.error);
-
-    document.getElementById("result").style.display="block";
-    document.getElementById("result").textContent =
-      JSON.stringify(data, null, 2);
-
-    // ✅ SHOW DOWNLOAD BUTTON
-    document.getElementById("download-btn").style.display = "block";
-
-  } catch {
-    show("gen-error","Generation failed");
+  if(data.error){
+    document.getElementById("result").innerHTML = data.error;
+    return;
   }
+
+  document.getElementById("download-btn").style.display = "block";
+
+  document.getElementById("result").innerHTML =
+    formatOutput(data, type);
 }
 
-// ✅ PDF FUNCTION
-function downloadPDF() {
+// 🔥 FORMAT OUTPUT
+function formatOutput(data, type){
+  let html = "";
+
+  if(type === "quiz" || type === "question paper"){
+    data.forEach((q,i)=>{
+      html += `<b>Q${i+1}. ${q.question}</b><br>`;
+      q.options.forEach((opt,idx)=>{
+        let letter = String.fromCharCode(65+idx);
+        if(letter === q.answer){
+          html += `<div class="correct">✔ ${letter}. ${opt}</div>`;
+        } else {
+          html += `<div>${letter}. ${opt}</div>`;
+        }
+      });
+      html += `<br>`;
+    });
+  }
+
+  else if(type === "flashcards"){
+    data.forEach((q,i)=>{
+      html += `<b>Q${i+1}. ${q.question}</b><br>
+      <span class="correct">Answer: ${q.answer}</span><br><br>`;
+    });
+  }
+
+  return html;
+}
+
+// PDF
+function downloadPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const content = document.getElementById("result").textContent;
+  const text = document.getElementById("result").innerText;
+  const lines = doc.splitTextToSize(text, 180);
 
-  const lines = doc.splitTextToSize(content, 180);
-
-  doc.setFontSize(14);
   doc.text("JVR'S StudyAI", 10, 10);
-
-  doc.setFontSize(11);
-  doc.text("Generated Study Material", 10, 20);
-
-  doc.text(lines, 10, 30);
+  doc.text(lines, 10, 20);
 
   doc.save("study_material.pdf");
-}
-
-// HELPERS
-function show(id,msg){
-  const el = document.getElementById(id);
-  el.style.display="block";
-  el.textContent=msg;
-}
-function hide(id){
-  document.getElementById(id).style.display="none";
 }
 
 </script>
