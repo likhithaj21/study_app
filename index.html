@@ -261,106 +261,86 @@
 <div class="main">
 
   <!-- ── UPLOAD SECTION ── -->
-  <div class="card">
-    <div class="card-title"><span class="icon">📁</span> Upload Notes <small style="font-weight:400;color:var(--muted);font-size:.82rem;margin-left:.25rem">(one-time per topic)</small></div>
+<div class="card">
+  <div class="card-title">
+    <span class="icon">📁</span> Upload Notes 
+    <small style="font-weight:400;color:var(--muted);font-size:.82rem;margin-left:.25rem">
+      (multiple files allowed)
+    </small>
+  </div>
+
+  <div class="field">
+    <label>Topic Name</label>
+    <input type="text" id="upload-topic" placeholder="e.g. Cell Biology, Photosynthesis, Indian History…" />
+  </div>
+
+  <div class="field">
+    <label>Notes Files</label>
+    <div class="file-drop" id="drop-zone"
+         onclick="document.getElementById('file-input').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+
+      <!-- ✅ MULTI FILE SUPPORT -->
+      <input type="file" id="file-input"
+             accept=".pdf,.txt,.docx"
+             multiple
+             onchange="fileChosen(this)" />
+
+      <div class="file-label">
+        🖱️ <strong>Click to browse</strong> or drag & drop<br />
+        <span style="font-size:.78rem">
+          PDF / TXT / DOCX · Multiple files · Max 100MB per file
+        </span>
+      </div>
+
+      <div id="file-chosen"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="uploadNotes()" id="upload-btn">
+    ⬆️ Upload &amp; Save Notes
+  </button>
+
+  <div class="alert alert-success" id="upload-success"></div>
+  <div class="alert alert-error" id="upload-error"></div>
+</div>
+
+  <!-- ── UPLOAD SECTION ── -->
+<div class="card">
+  <div class="card-title">
+    📁 Upload Notes 
+    <small style="font-weight:400;color:var(--muted);font-size:.82rem;margin-left:.25rem">
+      (multiple files allowed)
+    </small>
+  </div>
+
+  <!-- ✅ FORM BASED (NO JS) -->
+  <form action="/upload" method="POST" enctype="multipart/form-data">
 
     <div class="field">
       <label>Topic Name</label>
-      <input type="text" id="upload-topic" placeholder="e.g. Cell Biology, Photosynthesis, Indian History…" />
+      <input type="text" name="topic" placeholder="e.g. Cell Biology..." required />
     </div>
 
     <div class="field">
-      <label>Notes File</label>
-      <div class="file-drop" id="drop-zone" onclick="document.getElementById('file-input').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')"
-           ondragleave="this.classList.remove('drag')"
-           ondrop="handleDrop(event)">
-        <input type="file" id="file-input" accept=".pdf,.txt" onchange="fileChosen(this)" />
-        <div class="file-label">🖱️ <strong>Click to browse</strong> or drag & drop<br /><span style="font-size:.78rem">PDF or TXT · Max 10 MB</span></div>
-        <div id="file-chosen"></div>
-      </div>
+      <label>Notes Files</label>
+
+      <!-- ✅ MULTIPLE FILE SUPPORT -->
+      <input type="file" name="file" multiple accept=".pdf,.txt,.docx" required>
+
+      <p style="font-size:.78rem;color:gray;">
+        PDF / TXT / DOCX · Multiple files · Max 100MB per file
+      </p>
     </div>
 
-    <button class="btn btn-primary" onclick="uploadNotes()" id="upload-btn">
-      ⬆️ Upload &amp; Save Notes
+    <button type="submit" class="btn btn-primary">
+      ⬆️ Upload & Save Notes
     </button>
-    <div class="alert alert-success" id="upload-success"></div>
-    <div class="alert alert-error"   id="upload-error"></div>
-  </div>
 
-  <!-- ── GENERATE SECTION ── -->
-  <div class="card">
-    <div class="card-title">
-      <span class="icon">✨</span>
-      Generate Study Material
-      <span class="topic-count" id="topic-count">0 topics</span>
-    </div>
-
-    <div class="field">
-      <label>Select Saved Topic</label>
-      <select id="gen-topic" onchange="onTopicChange()">
-        <option value="">— choose a topic —</option>
-      </select>
-      <div class="notes-info" id="notes-info"></div>
-    </div>
-
-    <hr class="divider" />
-
-    <div class="row">
-      <div class="field">
-        <label>Output Type</label>
-        <select id="output-type">
-          <option value="quiz">Quiz</option>
-          <option value="flashcards">Flashcards</option>
-          <option value="question_paper">Question Paper</option>
-          <option value="recall">Recall / Revision</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Difficulty</label>
-        <select id="difficulty">
-          <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="difficult">Difficult</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Number of Items</label>
-      <select id="num-questions">
-        <option value="3">3</option>
-        <option value="5" selected>5</option>
-        <option value="10">10</option>
-        <option value="15">15</option>
-        <option value="20">20</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Question Types (optional — for Question Paper)</label>
-      <div class="check-grid" id="qtype-grid">
-        <label class="check-item"><input type="checkbox" value="Standard MCQ" checked /> Standard MCQ</label>
-        <label class="check-item"><input type="checkbox" value="Incorrect Statement" /> Incorrect Statement</label>
-        <label class="check-item"><input type="checkbox" value="EXCEPT Type" /> EXCEPT Type</label>
-        <label class="check-item"><input type="checkbox" value="Assertion-Reason" /> Assertion-Reason</label>
-        <label class="check-item"><input type="checkbox" value="Match the Column" /> Match the Column</label>
-        <label class="check-item"><input type="checkbox" value="Statement-based" /> Statement-based</label>
-        <label class="check-item"><input type="checkbox" value="Arrange in Sequence" /> Arrange in Sequence</label>
-        <label class="check-item"><input type="checkbox" value="Clinical Scenario" /> Clinical Scenario</label>
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-full" onclick="generate()" id="gen-btn">
-      🚀 Generate
-    </button>
-    <div class="alert alert-error" id="gen-error"></div>
-
-    <div class="loader-wrap" id="loader">
-      <div class="spinner"></div>
-      <span style="color:var(--muted);font-size:.9rem">Generating with Ollama… this may take 15–60 seconds</span>
-    </div>
-  </div>
+  </form>
+</div>
 
   <!-- ── RESULT AREA ── -->
   <div class="card" id="result-area">
