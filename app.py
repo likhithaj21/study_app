@@ -150,11 +150,10 @@ def generate():
 
     if output == "quiz":
         format_block = """
-Return ONLY valid JSON:
 [
   {
     "question": "string",
-    "options": ["A","B","C","D"],
+    "options": ["option text A", "option text B", "option text C", "option text D"],
     "answer": "A"
   }
 ]
@@ -162,7 +161,6 @@ Return ONLY valid JSON:
 
     elif output == "flashcards":
         format_block = """
-Return ONLY valid JSON:
 [
   {
     "question": "string",
@@ -173,73 +171,86 @@ Return ONLY valid JSON:
 
     elif output == "question paper":
         format_block = f"""
-Return ONLY valid JSON:
 [
   {{
     "question": "string",
-    "options": ["A","B","C","D"],
+    "options": ["option text A", "option text B", "option text C", "option text D"],
     "answer": "A"
   }}
 ]
-
-Rules:
-- Generate {n} MCQs
-- Each must have 4 options
-- Only one correct answer
-- Cover different parts of the topic
 """
 
     else:
         return jsonify({"error": "Invalid output type"}), 400
 
-    prompt = f"""
-You are an expert teacher.
+    prompt = f"""IMPORTANT: Output ONLY a valid JSON array. No explanation. No markdown. No extra text before or after. Start directly with [ and end with ].
+
+You are an expert teacher creating study material from the notes below.
 
 STRICT RULES:
 - Use ONLY the provided notes
-- Do NOT add outside knowledge
-- Output ONLY JSON (no explanation)
-- Follow the format EXACTLY
+- Do NOT use outside knowledge
+- Output ONLY a raw JSON array — no markdown, no code fences, no explanation
+- The answer field must be ONLY the letter: A, B, C, or D
+- Each question must have exactly 4 options as plain text (no letter prefix in options)
+- Generate exactly {n} items
+- Difficulty: {difficulty}
+- Type: {output}
 
 NOTES:
 {notes}
 
-TASK:
-Generate {n} MCQs
-Type: {output}
-Difficulty: {difficulty}
-
+REQUIRED JSON FORMAT:
 {format_block}
-"""
+
+Remember: Start your response with [ and end with ]. Nothing else."""
 
     try:
         res = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.3
+            temperature=0.2
         )
         raw = res.choices[0].message.content.strip()
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    # ─── ROBUST JSON EXTRACTION ───────────────────
     try:
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
+        # Remove markdown code fences if present
+        if "```" in raw:
+            parts = raw.split("```")
+            for part in parts:
+                part = part.strip()
+                if part.startswith("json"):
+                    part = part[4:].strip()
+                if part.startswith("[") or part.startswith("{"):
+                    raw = part
+                    break
 
-        start = raw.find("{") if "{" in raw else raw.find("[")
-        end = raw.rfind("}") + 1 if "}" in raw else raw.rfind("]") + 1
-        if start == -1 or end == 0:
-            raise ValueError("No JSON found")
+        raw = raw.strip()
+
+        # Find outermost JSON array or object
+        if "[" in raw:
+            start = raw.index("[")
+            end   = raw.rindex("]") + 1
+        elif "{" in raw:
+            start = raw.index("{")
+            end   = raw.rindex("}") + 1
+        else:
+            raise ValueError("No JSON found in response")
+
         clean_json = raw[start:end]
-
         parsed = json.loads(clean_json)
 
-    except Exception:
+        if not isinstance(parsed, list):
+            parsed = [parsed]
+
+    except Exception as e:
         return jsonify({
             "error": "Failed to parse AI output",
+            "detail": str(e),
             "raw": raw
         }), 500
 
