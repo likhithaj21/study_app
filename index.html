@@ -5,25 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JVR'S StudyAI</title>
 
+<!-- ✅ PDF LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #eef2ff, #f8fafc);
   margin: 0;
 }
-
 .container {
   max-width: 900px;
   margin: auto;
   padding: 30px;
 }
-
 h1 {
   text-align: center;
   color: #4f46e5;
   margin-bottom: 30px;
 }
-
 .card {
   background: white;
   padding: 25px;
@@ -31,13 +31,11 @@ h1 {
   margin-bottom: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
-
 label {
   font-weight: 600;
   margin-top: 10px;
   display: block;
 }
-
 input, select {
   width: 100%;
   padding: 12px;
@@ -46,11 +44,9 @@ input, select {
   border: 1px solid #ddd;
   font-size: 14px;
 }
-
 input[type="file"] {
   border: none;
 }
-
 button {
   margin-top: 15px;
   padding: 12px;
@@ -62,24 +58,19 @@ button {
   width: 100%;
   font-size: 15px;
 }
-
 button:hover {
   background: #4338ca;
 }
-
 .alert {
   margin-top: 10px;
   font-size: 14px;
 }
-
 .alert-error {
   color: #dc2626;
 }
-
 .alert-success {
   color: #16a34a;
 }
-
 .result {
   white-space: pre-wrap;
   background: #f9fafb;
@@ -128,6 +119,11 @@ button:hover {
   </select>
 
   <button onclick="generate()">Generate</button>
+
+  <!-- ✅ PDF BUTTON -->
+  <button onclick="downloadPDF()" id="download-btn" style="display:none;">
+    📄 Download PDF
+  </button>
 
   <div class="alert alert-error" id="gen-error"></div>
 
@@ -218,9 +214,32 @@ async function generate() {
     document.getElementById("result").textContent =
       JSON.stringify(data, null, 2);
 
+    // ✅ SHOW DOWNLOAD BUTTON
+    document.getElementById("download-btn").style.display = "block";
+
   } catch {
     show("gen-error","Generation failed");
   }
+}
+
+// ✅ PDF FUNCTION
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const content = document.getElementById("result").textContent;
+
+  const lines = doc.splitTextToSize(content, 180);
+
+  doc.setFontSize(14);
+  doc.text("JVR'S StudyAI", 10, 10);
+
+  doc.setFontSize(11);
+  doc.text("Generated Study Material", 10, 20);
+
+  doc.text(lines, 10, 30);
+
+  doc.save("study_material.pdf");
 }
 
 // HELPERS
