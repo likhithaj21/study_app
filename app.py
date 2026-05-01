@@ -192,13 +192,13 @@ def safe_parse_json(raw: str):
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
-    init_db()
-    print("✅ Database initialized: notes.db")
-    print("🚀 Starting server at http://localhost:5000")
-    app.run(debug=True, port=5000)
 
 import os
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    init_db()
+    print(" Database initialized: notes.db")
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
+    )
