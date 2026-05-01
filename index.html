@@ -3,602 +3,161 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>StudyAI — Upload Once, Learn Forever</title>
+<title>StudyAI</title>
+
 <style>
-  /* ── Reset & base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:        #f5f6fa;
-    --surface:   #ffffff;
-    --border:    #e2e5ed;
-    --primary:   #4f46e5;
-    --primary-h: #4338ca;
-    --text:      #1e1f26;
-    --muted:     #6b7280;
-    --success:   #16a34a;
-    --error:     #dc2626;
-    --warn:      #d97706;
-    --radius:    10px;
-    --shadow:    0 1px 4px rgba(0,0,0,.08);
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  /* ── Layout ── */
-  header {
-    background: var(--primary);
-    color: #fff;
-    padding: 1.1rem 2rem;
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    box-shadow: 0 2px 8px rgba(79,70,229,.3);
-  }
-  header h1 { font-size: 1.25rem; font-weight: 700; }
-  header span { font-size: .85rem; opacity: .8; }
-
-  .main { max-width: 960px; margin: 2rem auto; padding: 0 1.25rem; display: grid; gap: 1.5rem; }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
-  }
-  .card-title {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    color: var(--text);
-  }
-  .card-title .icon {
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    background: #ede9fe; color: var(--primary);
-  }
-
-  /* ── Form elements ── */
-  .field { margin-bottom: 1rem; }
-  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .35rem; color: var(--muted); }
-  input[type=text], select, textarea {
-    width: 100%;
-    padding: .55rem .85rem;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    font-size: .92rem;
-    font-family: inherit;
-    background: #fafafa;
-    color: var(--text);
-    transition: border-color .2s;
-  }
-  input[type=text]:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(79,70,229,.1);
-  }
-  .file-drop {
-    border: 2px dashed var(--border);
-    border-radius: 8px;
-    padding: 1.2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-  }
-  .file-drop:hover, .file-drop.drag { border-color: var(--primary); background: #ede9fe22; }
-  .file-drop input[type=file] { display: none; }
-  .file-drop .file-label { font-size: .88rem; color: var(--muted); }
-  .file-drop .file-label strong { color: var(--primary); }
-  #file-chosen { font-size: .8rem; margin-top: .4rem; color: var(--muted); }
-
-  /* ── Checkbox grid ── */
-  .check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: .5rem; }
-  .check-item {
-    display: flex; align-items: center; gap: .5rem;
-    border: 1px solid var(--border); border-radius: 7px;
-    padding: .5rem .75rem; font-size: .85rem; cursor: pointer;
-    transition: border-color .2s, background .2s;
-    user-select: none;
-  }
-  .check-item:hover { border-color: var(--primary); background: #f5f3ff; }
-  .check-item input[type=checkbox] { accent-color: var(--primary); }
-
-  /* ── Row layout ── */
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media(max-width:580px) { .row { grid-template-columns: 1fr; } }
-
-  /* ── Buttons ── */
-  .btn {
-    display: inline-flex; align-items: center; gap: .45rem;
-    padding: .65rem 1.4rem;
-    border: none; border-radius: 8px;
-    font-size: .92rem; font-weight: 600; cursor: pointer;
-    transition: background .2s, transform .1s;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: var(--primary-h); }
-  .btn-primary:active { transform: scale(.98); }
-  .btn-full { width: 100%; justify-content: center; font-size: 1rem; padding: .75rem; }
-  .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
-
-  /* ── Alerts ── */
-  .alert {
-    padding: .7rem 1rem; border-radius: 8px;
-    font-size: .88rem; margin-top: .75rem;
-    display: none;
-  }
-  .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-  .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-  .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-
-  /* ── Loader ── */
-  .loader-wrap { display: none; justify-content: center; align-items: center; gap: .75rem; padding: 1.5rem; }
-  .spinner {
-    width: 28px; height: 28px;
-    border: 3px solid var(--border);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin .75s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Notes preview chip ── */
-  .notes-info {
-    background: #f5f3ff; border: 1px solid #ddd6fe;
-    border-radius: 8px; padding: .6rem 1rem;
-    font-size: .85rem; color: #5b21b6;
-    display: none; margin-top: .5rem;
-  }
-
-  /* ── Result area ── */
-  #result-area { display: none; }
-  .result-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1rem;
-  }
-  .result-header h3 { font-size: 1rem; font-weight: 700; }
-  .tab-bar { display: flex; gap: .5rem; flex-wrap: wrap; }
-  .tab {
-    padding: .4rem .9rem; border-radius: 20px;
-    border: 1px solid var(--border); background: var(--surface);
-    font-size: .82rem; font-weight: 500; cursor: pointer;
-    transition: all .2s;
-  }
-  .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-  /* ── Question cards ── */
-  .q-list { display: flex; flex-direction: column; gap: .85rem; }
-  .q-card {
-    border: 1px solid var(--border); border-radius: 9px; padding: 1rem 1.1rem;
-    background: var(--surface);
-  }
-  .q-num { font-size: .75rem; font-weight: 700; color: var(--primary); margin-bottom: .35rem; text-transform: uppercase; letter-spacing: .04em; }
-  .q-text { font-weight: 600; margin-bottom: .6rem; line-height: 1.5; }
-  .options { list-style: none; display: flex; flex-direction: column; gap: .3rem; }
-  .options li {
-    padding: .4rem .75rem;
-    border-radius: 6px; border: 1px solid var(--border);
-    font-size: .88rem;
-    transition: background .15s;
-  }
-  .options li.correct { background: #dcfce7; border-color: #86efac; color: #166534; font-weight: 600; }
-  .options li.wrong   { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
-  .explanation {
-    font-size: .83rem; color: var(--muted);
-    border-left: 3px solid var(--primary);
-    padding-left: .75rem; margin-top: .65rem;
-    line-height: 1.6;
-  }
-
-  /* ── Flashcards ── */
-  .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: .85rem; }
-  .flashcard {
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 1rem; cursor: pointer; min-height: 130px;
-    display: flex; flex-direction: column;
-    transition: transform .15s, box-shadow .15s;
-    position: relative; overflow: hidden;
-  }
-  .flashcard:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
-  .flashcard .fc-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--primary); margin-bottom: .5rem; }
-  .flashcard .fc-front { font-weight: 600; font-size: .92rem; flex: 1; }
-  .flashcard .fc-back { font-size: .85rem; color: var(--muted); margin-top: .5rem; display: none; line-height: 1.55; }
-  .flashcard.flipped { background: #f5f3ff; border-color: #c4b5fd; }
-  .flashcard.flipped .fc-front { display: none; }
-  .flashcard.flipped .fc-back { display: block; }
-  .flashcard.flipped .fc-label { color: #7c3aed; }
-  .flip-hint { font-size: .7rem; color: var(--muted); margin-top: .5rem; }
-
-  /* ── Recall ── */
-  .recall-list { display: flex; flex-direction: column; gap: .75rem; }
-  .recall-card { border: 1px solid var(--border); border-radius: 9px; padding: 1rem 1.1rem; }
-  .recall-cue { font-weight: 700; margin-bottom: .4rem; }
-  .recall-ans { font-size: .88rem; color: var(--muted); line-height: 1.6; }
-
-  /* ── Paper ── */
-  .paper-meta { font-size: .83rem; color: var(--muted); margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
-  .paper-section { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--primary); margin: 1rem 0 .5rem; }
-
-  /* ── Raw JSON ── */
-  pre {
-    background: #1e1f26; color: #a5f3fc;
-    border-radius: 8px; padding: 1rem;
-    font-size: .78rem; overflow-x: auto; white-space: pre-wrap;
-    max-height: 480px; overflow-y: auto;
-    line-height: 1.6;
-  }
-
-  /* ── Divider ── */
-  .divider { border: none; border-top: 1px solid var(--border); margin: .75rem 0; }
-
-  /* ── Saved topics badge ── */
-  .topic-count { font-size: .75rem; background: #ede9fe; color: var(--primary); padding: .15rem .55rem; border-radius: 20px; font-weight: 600; }
+body { font-family: Arial; background:#f5f6fa; padding:20px; }
+.card { background:#fff; padding:20px; border-radius:10px; margin-bottom:20px; }
+.btn { padding:10px 20px; background:#4f46e5; color:#fff; border:none; cursor:pointer; }
+.alert { margin-top:10px; display:none; }
+.alert-error { color:red; }
+.alert-success { color:green; }
 </style>
 </head>
+
 <body>
 
-<header>
-  <div style="font-size:1.5rem">🧠</div>
-  <div>
-    <h1>StudyAI</h1>
-    <span>Upload once · Learn forever · Powered by Ollama</span>
-  </div>
-</header>
+<h2>🧠 StudyAI</h2>
 
-<div class="main">
-
-  <!-- ── UPLOAD SECTION ── -->
+<!-- UPLOAD -->
 <div class="card">
-  <div class="card-title">
-    <span class="icon">📁</span> Upload Notes 
-    <small style="font-weight:400;color:var(--muted);font-size:.82rem;margin-left:.25rem">
-      (multiple files allowed)
-    </small>
-  </div>
+  <h3>Upload Notes</h3>
 
-  <div class="field">
-    <label>Topic Name</label>
-    <input type="text" id="upload-topic" placeholder="e.g. Cell Biology, Photosynthesis, Indian History…" />
-  </div>
+  <input type="text" id="upload-topic" placeholder="Enter topic" /><br><br>
 
-  <div class="field">
-    <label>Notes Files</label>
-    <div class="file-drop" id="drop-zone"
-         onclick="document.getElementById('file-input').click()"
-         ondragover="event.preventDefault();this.classList.add('drag')"
-         ondragleave="this.classList.remove('drag')"
-         ondrop="handleDrop(event)">
+  <!-- MULTIPLE FILE -->
+  <input type="file" id="file-input" multiple accept=".pdf,.txt" /><br><br>
 
-      <!-- ✅ MULTI FILE SUPPORT -->
-      <input type="file" id="file-input"
-             accept=".pdf,.txt,.docx"
-             multiple
-             onchange="fileChosen(this)" />
-
-      <div class="file-label">
-        🖱️ <strong>Click to browse</strong> or drag & drop<br />
-        <span style="font-size:.78rem">
-          PDF / TXT / DOCX · Multiple files · Max 100MB per file
-        </span>
-      </div>
-
-      <div id="file-chosen"></div>
-    </div>
-  </div>
-
-  <button class="btn btn-primary" onclick="uploadNotes()" id="upload-btn">
-    ⬆️ Upload &amp; Save Notes
-  </button>
+  <button class="btn" onclick="uploadNotes()">Upload</button>
 
   <div class="alert alert-success" id="upload-success"></div>
   <div class="alert alert-error" id="upload-error"></div>
 </div>
 
-  <!-- ── UPLOAD SECTION ── -->
+<!-- GENERATE -->
 <div class="card">
-  <div class="card-title">
-    📁 Upload Notes 
-    <small style="font-weight:400;color:var(--muted);font-size:.82rem;margin-left:.25rem">
-      (multiple files allowed)
-    </small>
-  </div>
+  <h3>Generate Questions</h3>
 
-  <!-- ✅ FORM BASED (NO JS) -->
-  <form action="/upload" method="POST" enctype="multipart/form-data">
+  <select id="gen-topic"></select><br><br>
 
-    <div class="field">
-      <label>Topic Name</label>
-      <input type="text" name="topic" placeholder="e.g. Cell Biology..." required />
-    </div>
+  <select id="output-type">
+    <option value="quiz">Quiz</option>
+    <option value="flashcards">Flashcards</option>
+    <option value="question_paper">Question Paper</option>
+  </select><br><br>
 
-    <div class="field">
-      <label>Notes Files</label>
+  <button class="btn" onclick="generate()">Generate</button>
 
-      <!-- ✅ MULTIPLE FILE SUPPORT -->
-      <input type="file" name="file" multiple accept=".pdf,.txt,.docx" required>
-
-      <p style="font-size:.78rem;color:gray;">
-        PDF / TXT / DOCX · Multiple files · Max 100MB per file
-      </p>
-    </div>
-
-    <button type="submit" class="btn btn-primary">
-      ⬆️ Upload & Save Notes
-    </button>
-
-  </form>
+  <div class="alert alert-error" id="gen-error"></div>
 </div>
 
-  <!-- ── RESULT AREA ── -->
-  <div class="card" id="result-area">
-    <div class="result-header">
-      <h3 id="result-title">Results</h3>
-      <div class="tab-bar" id="tab-bar">
-        <button class="tab active" onclick="switchTab('formatted')">Formatted</button>
-        <button class="tab" onclick="switchTab('raw')">Raw JSON</button>
-      </div>
-    </div>
-
-    <div id="tab-formatted"></div>
-    <div id="tab-raw" style="display:none"><pre id="raw-json"></pre></div>
-  </div>
-
-</div><!-- /main -->
+<!-- RESULT -->
+<div class="card" id="result" style="display:none;">
+  <h3>Result</h3>
+  <pre id="output"></pre>
+</div>
 
 <script>
-const BASE = "http://localhost:5000";
-let currentTab = "formatted";
 
-// ─── Boot ────────────────────────────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", loadTopics);
+const BASE = ""; // 🔥 FIXED
 
-// ─── File drop / choose ───────────────────────────────────────────────────────
-function fileChosen(input) {
-  const f = input.files[0];
-  document.getElementById("file-chosen").textContent = f ? `✅ ${f.name} (${(f.size/1024).toFixed(1)} KB)` : "";
-  document.getElementById("drop-zone").classList.remove("drag");
-}
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById("drop-zone").classList.remove("drag");
-  const f = e.dataTransfer.files[0];
-  if (f) {
-    const dt = new DataTransfer(); dt.items.add(f);
-    const inp = document.getElementById("file-input");
-    inp.files = dt.files;
-    fileChosen(inp);
-  }
+// LOAD TOPICS
+async function loadTopics() {
+  const res = await fetch("/topics");
+  const data = await res.json();
+
+  const sel = document.getElementById("gen-topic");
+  sel.innerHTML = "";
+
+  data.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t.topic;
+    opt.textContent = t.topic;
+    sel.appendChild(opt);
+  });
 }
 
-// ─── Upload Notes ─────────────────────────────────────────────────────────────
+window.onload = loadTopics;
+
+// UPLOAD
 async function uploadNotes() {
-  const topic = document.getElementById("upload-topic").value.trim();
-  const file  = document.getElementById("file-input").files[0];
-  hide("upload-success"); hide("upload-error");
+  const topic = document.getElementById("upload-topic").value;
+  const files = document.getElementById("file-input").files;
 
-  if (!topic) { showAlert("upload-error", "Please enter a topic name."); return; }
-  if (!file)  { showAlert("upload-error", "Please choose a PDF or TXT file."); return; }
+  hide("upload-error");
+  hide("upload-success");
 
-  const btn = document.getElementById("upload-btn");
-  btn.disabled = true; btn.textContent = "⏳ Uploading…";
+  if (!topic) return show("upload-error","Enter topic");
+  if (!files.length) return show("upload-error","Select files");
 
   const fd = new FormData();
   fd.append("topic", topic);
-  fd.append("file", file);
+
+  for (let f of files) {
+    fd.append("file", f);
+  }
 
   try {
-    const res = await fetch(`${BASE}/upload_notes`, { method: "POST", body: fd });
-    const data = await res.json();
-    if (!res.ok || data.error) { showAlert("upload-error", data.error || "Upload failed."); return; }
-    showAlert("upload-success", `${data.message} (${data.chars.toLocaleString()} characters extracted)`);
-    document.getElementById("upload-topic").value = "";
-    document.getElementById("file-input").value = "";
-    document.getElementById("file-chosen").textContent = "";
-    await loadTopics();
-  } catch(e) {
-    showAlert("upload-error", "Cannot connect to backend. Is Flask running on port 5000?");
-  } finally {
-    btn.disabled = false; btn.textContent = "⬆️ Upload & Save Notes";
+    const res = await fetch("/upload", {
+      method: "POST",
+      body: fd
+    });
+
+    const text = await res.text();
+
+    show("upload-success", text);
+    loadTopics();
+
+  } catch {
+    show("upload-error","Upload failed");
   }
 }
 
-// ─── Topics ───────────────────────────────────────────────────────────────────
-async function loadTopics() {
-  try {
-    const res  = await fetch(`${BASE}/topics`);
-    const list = await res.json();
-    const sel  = document.getElementById("gen-topic");
-    sel.innerHTML = '<option value="">— choose a topic —</option>';
-    list.forEach(t => {
-      const o = document.createElement("option");
-      o.value = t.topic; o.textContent = t.topic;
-      sel.appendChild(o);
-    });
-    document.getElementById("topic-count").textContent = `${list.length} topic${list.length !== 1 ? "s" : ""}`;
-  } catch(e) { /* backend not ready */ }
-}
-
-async function onTopicChange() {
-  const topic = document.getElementById("gen-topic").value;
-  const info  = document.getElementById("notes-info");
-  if (!topic) { info.style.display = "none"; return; }
-  try {
-    const res  = await fetch(`${BASE}/get_notes?topic=${encodeURIComponent(topic)}`);
-    const data = await res.json();
-    if (data.error) { info.style.display = "none"; return; }
-    info.style.display = "block";
-    info.textContent = `📄 ${data.chars.toLocaleString()} characters of notes loaded — ready to generate!`;
-  } catch(e) { info.style.display = "none"; }
-}
-
-// ─── Generate ─────────────────────────────────────────────────────────────────
+// GENERATE
 async function generate() {
   const topic = document.getElementById("gen-topic").value;
+  const outputType = document.getElementById("output-type").value;
+
   hide("gen-error");
-  if (!topic) { showAlert("gen-error", "Please select a topic first."); return; }
 
-  const outputType    = document.getElementById("output-type").value;
-  const difficulty    = document.getElementById("difficulty").value;
-  const numQuestions  = parseInt(document.getElementById("num-questions").value);
-  const questionTypes = [...document.querySelectorAll("#qtype-grid input:checked")].map(c => c.value);
-
-  const btn = document.getElementById("gen-btn");
-  btn.disabled = true;
-  document.getElementById("loader").style.display = "flex";
-  document.getElementById("result-area").style.display = "none";
+  if (!topic) return show("gen-error","Select topic");
 
   try {
-    const res  = await fetch(`${BASE}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic, output_type: outputType, difficulty, number_of_questions: numQuestions, question_types: questionTypes })
+    const res = await fetch("/generate", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        topic: topic,
+        output_type: outputType,
+        difficulty:"medium",
+        number_of_questions:5
+      })
     });
+
     const data = await res.json();
-    if (!res.ok || data.error) { showAlert("gen-error", data.error || "Generation failed."); return; }
 
-    renderResult(data);
-  } catch(e) {
-    showAlert("gen-error", "Cannot connect to backend. Is Flask running on port 5000?");
-  } finally {
-    btn.disabled = false;
-    document.getElementById("loader").style.display = "none";
+    if (data.error) return show("gen-error", data.error);
+
+    document.getElementById("result").style.display="block";
+    document.getElementById("output").textContent =
+      JSON.stringify(data.result, null, 2);
+
+  } catch {
+    show("gen-error","Generation failed");
   }
 }
 
-// ─── Render Result ────────────────────────────────────────────────────────────
-function renderResult(data) {
-  const area    = document.getElementById("result-area");
-  const title   = document.getElementById("result-title");
-  const fmtDiv  = document.getElementById("tab-formatted");
-  const rawPre  = document.getElementById("raw-json");
-
-  title.textContent = `${capitalize(data.output_type.replace("_", " "))} — ${data.topic}`;
-  rawPre.textContent = JSON.stringify(data.result, null, 2);
-
-  const r = data.result;
-  let html = "";
-
-  if (data.output_type === "quiz" && r.quiz) {
-    html = renderQuizHTML(r.quiz);
-  } else if (data.output_type === "flashcards" && r.flashcards) {
-    html = renderFlashcardsHTML(r.flashcards);
-  } else if (data.output_type === "question_paper" && r.question_paper) {
-    html = renderPaperHTML(r);
-  } else if (data.output_type === "recall" && r.recall) {
-    html = renderRecallHTML(r.recall);
-  } else if (r.raw_text) {
-    html = `<div class="alert alert-info" style="display:block">⚠️ Ollama returned unstructured text. See Raw JSON tab.</div>
-            <pre style="margin-top:.75rem">${esc(r.raw_text)}</pre>`;
-  } else {
-    html = `<pre>${esc(JSON.stringify(r, null, 2))}</pre>`;
-  }
-
-  fmtDiv.innerHTML = html;
-  area.style.display = "block";
-  switchTab("formatted");
-  area.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  // wire flashcard flips
-  document.querySelectorAll(".flashcard").forEach(fc => {
-    fc.addEventListener("click", () => fc.classList.toggle("flipped"));
-  });
-}
-
-function renderQuizHTML(questions) {
-  return `<div class="q-list">${questions.map((q,i) => `
-    <div class="q-card">
-      <div class="q-num">Question ${i+1}</div>
-      <div class="q-text">${esc(q.question)}</div>
-      <ul class="options">${renderOptions(q.options, q.correct_answer)}</ul>
-      ${q.explanation ? `<div class="explanation">💡 ${esc(q.explanation)}</div>` : ""}
-    </div>`).join("")}
-  </div>`;
-}
-
-function renderFlashcardsHTML(cards) {
-  return `<p style="font-size:.82rem;color:var(--muted);margin-bottom:.75rem">👆 Click a card to flip it</p>
-  <div class="flashcard-grid">${cards.map(c => `
-    <div class="flashcard">
-      <div class="fc-label">Front</div>
-      <div class="fc-front">${esc(c.front)}</div>
-      <div class="fc-back">${esc(c.back)}</div>
-      <div class="flip-hint">Tap to flip</div>
-    </div>`).join("")}
-  </div>`;
-}
-
-function renderPaperHTML(r) {
-  const qs = r.question_paper;
-  return `<div class="paper-meta">${r.instructions || "Attempt all questions."} ${r.duration ? `· Duration: ${r.duration}` : ""}</div>
-  <div class="q-list">${qs.map((q,i) => `
-    <div class="q-card">
-      <div class="q-num">Q${i+1} · ${esc(q.type||"MCQ")}</div>
-      <div class="q-text">${esc(q.question)}</div>
-      <ul class="options">${renderOptions(q.options, q.correct_answer)}</ul>
-      ${q.explanation ? `<div class="explanation">💡 ${esc(q.explanation)}</div>` : ""}
-    </div>`).join("")}
-  </div>`;
-}
-
-function renderRecallHTML(items) {
-  return `<div class="recall-list">${items.map((r,i) => `
-    <div class="recall-card">
-      <div class="recall-cue">🔁 ${i+1}. ${esc(r.cue)}</div>
-      <div class="recall-ans">${esc(r.recall_answer)}</div>
-    </div>`).join("")}
-  </div>`;
-}
-
-function renderOptions(options, correct) {
-  if (!options) return "";
-  // options may be object {A,B,C,D} or array ["A. ...", ...]
-  if (Array.isArray(options)) {
-    return options.map(o => {
-      const letter = o.charAt(0);
-      return `<li class="${letter === correct ? 'correct' : ''}">${esc(o)}</li>`;
-    }).join("");
-  }
-  // object form
-  return Object.entries(options).map(([k,v]) =>
-    `<li class="${k === correct ? 'correct' : ''}"><strong>${k}.</strong> ${esc(v)}</li>`
-  ).join("");
-}
-
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  currentTab = name;
-  document.getElementById("tab-formatted").style.display = name === "formatted" ? "block" : "none";
-  document.getElementById("tab-raw").style.display       = name === "raw"       ? "block" : "none";
-  document.querySelectorAll(".tab").forEach((t,i) => {
-    t.classList.toggle("active", (i===0 && name==="formatted") || (i===1 && name==="raw"));
-  });
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function showAlert(id, msg) {
+// HELPERS
+function show(id,msg){
   const el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.display = "block";
+  el.style.display="block";
+  el.textContent=msg;
 }
-function hide(id) { document.getElementById(id).style.display = "none"; }
-function esc(s) {
-  if (!s) return "";
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function hide(id){
+  document.getElementById(id).style.display="none";
 }
-function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
 </script>
+
 </body>
 </html>
